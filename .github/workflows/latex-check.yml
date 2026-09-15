@@ -1,0 +1,160 @@
+name: LaTeX Quality Check
+
+on:
+  pull_request:
+    paths:
+      - '**.tex'
+      - '**.bib'
+
+jobs:
+  textidote:
+    name: Check spelling, grammar & style with TeXtidote
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Download TeXtidote
+        run: |
+          wget -q https://github.com/sylvainhalle/textidote/releases/download/v1.2.2/textidote.jar
+          echo "TEXTIDOTE_JAR=$(pwd)/textidote.jar" >> $GITHUB_ENV
+
+      - name: Create dictionary
+        run: |
+          cat > .textidote-dict.txt << 'EOF'
+          PointNet
+          PointNetVLAD
+          FPFH
+          ICP
+          RANSAC
+          RGBD
+          HTL
+          Traun
+          Upper Austria
+          Linz
+          Bachelor
+          Diplomarbeit
+          HinWoe
+          GitHub
+          DevOps
+          Docker
+          Kubernetes
+          Traefik
+          PostgreSQL
+          Elasticsearch
+          Keycloak
+          Angular
+          TypeScript
+          JavaScript
+          Python
+          Open3D
+          OpenCV
+          numpy
+          matplotlib
+          scikit-learn
+          PyTorch
+          TensorFlow
+          VSCode
+          Visual Studio Code
+          EOF
+
+      - name: Run TeXtidote on thesis.tex
+        run: |
+          java -jar $TEXTIDOTE_JAR \
+            --lang en \
+            --type tex \
+            --dict .textidote-dict.txt \
+            --output ansi \
+            thesis.tex
+
+      - name: Run TeXtidote on sections
+        run: |
+          java -jar $TEXTIDOTE_JAR \
+            --lang en \
+            --type tex \
+            --dict .textidote-dict.txt \
+            --output ansi \
+            sections/*.tex
+
+  chktex:
+    name: Validate LaTeX syntax with ChkTeX
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ChkTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chktex
+
+      - name: Run ChkTeX
+        run: |
+          chktex -Wall -q -I 4 -I 8 -I 17 thesis.tex sections/*.tex
+
+  latexmk:
+    name: Compile LaTeX to validate build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up TeX Live
+        uses: xu-cheng/texlive-action@v2
+        with:
+          scheme: 'small'
+          texlive_version: '2024'
+
+      - name: Install additional packages
+        run: |
+          tlmgr install \
+            collection-fontsrecommended \
+            collection-latexrecommended \
+            collection-bibtexextra \
+            biblatex \
+            biber \
+            xurl \
+            xhyperref \
+            hyperref \
+            geometry \
+            graphicx \
+            grffile \
+            float \
+            caption \
+            subcaption \
+            booktabs \
+            array \
+            tabularx \
+            longtable \
+            multirow \
+            colortbl \
+            xcolor \
+            todonotes \
+            csquotes \
+            biblatex-ieee \
+            glossaries \
+            glossaries-extra \
+            xpatch \
+            tracklang \
+            etoolbox \
+            mfirstuc \
+            datatool \
+            xfor \
+            fmtcount \
+            substring \
+            textcase \
+            xkeyval \
+            kvoptions \
+            kvsetkeys \
+            kvdefinekeys \
+            l3packages \
+            l3kernel \
+            l3backend
+
+      - name: Compile thesis
+        run: |
+          latexmk -pdf -interaction=nonstopmode -halt-on-error thesis.tex
+          echo "✅ LaTeX compilation successful!"
