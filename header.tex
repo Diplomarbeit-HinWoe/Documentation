@@ -1,7 +1,26 @@
-\begin{filecontents*}{\jobname.xmpdata}
-	\Keywords{CHANGEME, VR, IOT, TODO}
-	\Title{CHANGEME: Unser tolles Thema -- wir sind suppa}
-	\Author{CHANGEME, Stefan Schwammal, Susi Schwammal}
+% selects the first argument for German, the second for English thesis language
+\ifnum\pdfstrcmp{\thesislang}{de}=0
+	\newcommand{\langselect}[2]{#1}
+\else
+	\newcommand{\langselect}[2]{#2}
+\fi
+
+% joins all defined authors: \joinauthors{separator}{separator before last author}
+\newcommand{\joinauthors}[2]{%
+	\firstauthor
+	\ifcsname fourthauthor\endcsname
+		#1\secondauthor#1\thirdauthor#2\fourthauthor
+	\else\ifcsname thirdauthor\endcsname
+		#1\secondauthor#2\thirdauthor
+	\else
+		#2\secondauthor
+	\fi\fi}
+
+% PDF/A metadata, filled from global-const.tex (regenerated on every build)
+\begin{filecontents*}[overwrite]{\jobname.xmpdata}
+\Keywords{\thesiskeywords}
+\Title{\thesistitle}
+\Author{\joinauthors{\sep}{\sep}}
 \end{filecontents*}
 
 \setcounter{tocdepth}{1}
@@ -18,7 +37,7 @@
 \usepackage{lmodern, textcomp}
 \usepackage{lmodern}
 \usepackage{pdfpages}
-\usepackage[ngerman]{babel}
+\langselect{\usepackage[english,ngerman]{babel}}{\usepackage[ngerman,english]{babel}} % last language is the main language
 \usepackage{multicol}
 \usepackage{float}
 \usepackage{array,tabularx,booktabs}
@@ -120,7 +139,12 @@ morekeywords={base,var,in,out,dynamic,from,where,select,orderby,function,\$,grou
 	\fi
 }
 
-\newcommand{\setauthor}[1]{\ohead[]{#1}}
+% author of the current section, shown in the page header; set via \setauthor{Name} after each \section
+\newcommand{\currentauthor}{}
+\newcommand{\setauthor}[1]{\gdef\currentauthor{#1}}
+% every chapter starts without an author (introduction, summary and chapter introductions are written jointly)
+\newcommand{\resetauthor}[1]{\setauthor{}}
+\AddtoDoHook{heading/endgroup/chapter}{\resetauthor}
 
 \usepackage[automark]{scrlayer-scrpage}
 \pagestyle{scrheadings}
@@ -129,7 +153,7 @@ morekeywords={base,var,in,out,dynamic,from,where,select,orderby,function,\$,grou
 \rohead{\ifnum\expandafter\pdfstrcmp\botmark=0 \rightmark\else\leftmark{} --- \rightmark\fi}
 \ihead[]{\headmark}
 \chead[]{}
-\ohead{}
+\ohead{\currentauthor}
 \cfoot[]{}
 \ofoot[\pagemark]{\pagemark}
 \setheadsepline{.1pt}

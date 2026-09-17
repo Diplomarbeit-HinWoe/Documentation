@@ -17,11 +17,12 @@ This paper has neither been previously submitted to another authority nor has it
 
 The presented paper is identical to the electronically transmitted document.
 }
-\vspace{3cm}
+\par\vspace{3cm}
 % Hier kommt die Unterschrift drüber
-\begin{tabbing}
-Leonding, \IfStrEq{\thesislang}{de}{\duedatede}{\duedateen} \hspace{2cm} {\firstauthor} \& {\secondauthor} %, \thirdauthor \& \fourthauthor % replace & with , for all but the last author
-\end{tabbing}
+\noindent
+\begin{tabularx}{\textwidth}{@{}l@{\hspace{2cm}}>{\raggedright\arraybackslash}X@{}}
+Leonding, \langselect{\duedatede}{\duedateen} & \joinauthors{, }{ \& }
+\end{tabularx}
 \vspace{10cm}
 \newpage
 \setcounter{page}{1}
