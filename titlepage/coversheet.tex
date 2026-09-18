@@ -8,10 +8,11 @@
 \oddsidemargin 0mm
 \parindent 0pt
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage[a-1b]{pdfx}
 \usepackage{xstring}
 \pagestyle{empty}
-\include{../global-const}
+\input{../global-const}
 \begin{document}
 % -------- only change entries beginning here ----------------------------
 %
@@ -35,20 +36,16 @@
     \def\dep{Department of \department}
 }
 %
-% enter the student names
+% student names are taken from global-const.tex
 %
 \def\nameone{\firstauthor}
 \def\nametwo{\secondauthor}
-%\def\namethree{\thirdauthor}
-%\def\namefour{\fourthauthor}
 %
 % enter the name of the supervisor 
 %
 \def\firstreferee{\supervisor}
 %
-% enter information about external partners or comment the line
-%
-\def\assist{\projectpartner}
+% project partner is taken from global-const.tex (omitted if not defined there)
 %
 % enter month and year
 \IfStrEq{\thesislang}{de}{
@@ -115,11 +112,11 @@ Submitted by:
 \smallskip\par
 {\large\nameone}\par
 {\large\nametwo}
-\ifundefined{namethree}\else
-\par{\large\namethree}
+\ifundefined{thirdauthor}\else
+\par{\large\thirdauthor}
 \fi
-\ifundefined{namefour}\else
-\par{\large\namefour}
+\ifundefined{fourthauthor}\else
+\par{\large\fourthauthor}
 \fi
 \medskip\bigskip\par
 \IfStrEq{\thesislang}{de}
@@ -131,7 +128,7 @@ Supervisor:
 }
 \smallskip\par
 {\large\firstreferee}
-\ifundefined{assist}\else
+\ifundefined{projectpartner}\else
 \medskip\bigskip\par
 \IfStrEq{\thesislang}{de}
 {
@@ -141,7 +138,7 @@ Projektpartner:
 Project Partner:
 }
 \smallskip\par
-{\large{\assist}}
+{\large{\projectpartner}}
 \fi
 
 \vspace*{4cm}

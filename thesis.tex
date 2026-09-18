@@ -18,17 +18,7 @@
 \interfootnotelinepenalty=10000
 
 \title{\thesistitle}
-\makeatletter
-\@ifundefined{fourthauthor}{
-  \@ifundefined{thirdauthor}{
-    \author{\firstauthor, \secondauthor}
-  }{
-    \author{\firstauthor, \secondauthor, \thirdauthor}
-  }
-}{
-  \author{\firstauthor, \secondauthor, \thirdauthor, \fourthauthor}
-}
-\makeatother
+\author{\joinauthors{, }{, }}
 
 \makeindex
 \makeglossaries
@@ -66,27 +56,29 @@
 \pagestyle{scrheadings}
 
 \begin{spacing}{1}
-\chapter{Einleitung}\label{chapter:introduction}
+\chapter{\langselect{Einleitung}{Introduction}}\label{chapter:introduction} % fixed chapter
 \end{spacing}
 \input{./sections/introduction}
 
+% content chapters: adapt, add or remove as needed
+% use \langselect{German}{English} or simply write the title in the thesis language
 \begin{spacing}{1}
-\chapter{Umfeldanalyse}
+\chapter{\langselect{Umfeldanalyse}{Related Work}}
 \end{spacing}
 \input{./sections/related_work}
 
 \begin{spacing}{1}
-\chapter{Technologien}\label{chapter:tech}
+\chapter{\langselect{Technologien}{Technologies}}\label{chapter:tech}
 \end{spacing}
 \input{./sections/technologies}
 
 \begin{spacing}{1}
-\chapter{Umsetzung}\label{chapter:implementation}
+\chapter{\langselect{Umsetzung}{Implementation}}\label{chapter:implementation}
 \end{spacing}
 \input{./sections/implementation}
 
 \begin{spacing}{1}
-\chapter{Zusammenfassung}
+\chapter{\langselect{Zusammenfassung}{Summary}}\label{chapter:summary} % fixed chapter
 \end{spacing}
 \input{./sections/summary}
 
@@ -117,7 +109,7 @@
 \listoftables
 \lstlistoflistings
 \appendix
-\addchap{Anhang}
+\addchap{\langselect{Anhang}{Appendix}}
 \input{./sections/appendix}
 \end{document}
 

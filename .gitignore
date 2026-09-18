@@ -310,3 +310,5 @@ TSWLatexianTemp*
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,latex
+## Generated PDF/A metadata
+*.xmpdata
