@@ -63,19 +63,24 @@
 % content chapters: adapt, add or remove as needed
 % use \langselect{German}{English} or simply write the title in the thesis language
 \begin{spacing}{1}
-\chapter{\langselect{Umfeldanalyse}{Related Work}}
+\chapter{Current Situation and Related Work}\label{chapter:related-work}
 \end{spacing}
 \input{./sections/related_work}
 
 \begin{spacing}{1}
-\chapter{\langselect{Technologien}{Technologies}}\label{chapter:tech}
+\chapter{Proposed Solution}\label{chapter:solution}
 \end{spacing}
-\input{./sections/technologies}
+\input{./sections/solution}
 
 \begin{spacing}{1}
-\chapter{\langselect{Umsetzung}{Implementation}}\label{chapter:implementation}
+\chapter{Technical Description}\label{chapter:implementation}
 \end{spacing}
-\input{./sections/implementation}
+\input{./sections/technical_description}
+
+\begin{spacing}{1}
+\chapter{Evaluation}\label{chapter:evaluation}
+\end{spacing}
+\input{./sections/evaluation}
 
 \begin{spacing}{1}
 \chapter{\langselect{Zusammenfassung}{Summary}}\label{chapter:summary} % fixed chapter
@@ -112,4 +117,3 @@
 \addchap{\langselect{Anhang}{Appendix}}
 \input{./sections/appendix}
 \end{document}
-
