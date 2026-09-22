@@ -2,9 +2,51 @@
 
 \section{Current Problems and Requirements Derived from Practice}\label{sec:related-work:requirements}
 
+\setauthor{\firstauthor}
 \section{Provenance and Collection-Data Standards}\label{sec:related-work:standards}
 
+
+One of the main requirements of this system is the import and export of information in the form of an established format. This application stores not only physical properties of object but also only digital ones such as a history of the specific object like the creation date or when the data entry was created.
+
+After analyzing existing standards it became clear that no single standard covers all requirements of this project. For that reason the system combined selected componets of several standards. The W3C Prov data model is used to describe the origin and history of the data. Furthermore LIDO and Europeana Data Model is added to store cultural-heritage metadata. 
+
+The project specific data schema does not replace these standards. Instead it combines the core features of these and extends them where necessary.
+
+
 \subsection{W3C PROV and General Metadata Models}\label{sec:related-work:standards:prov}
+The W3C PROV familiy defines a model for describing the origin and history of any information but it does not define all metadata required for a collection object. It just stores the provenance.
+
+\begin{quote}
+	Provenance is information about entities, activities, and people involved in producing a piece of data or thing, which can be used to form assessments about its quality, reliability or trustworthiness \cite{groth2013provoverview} 
+\end{quote}
+
+The W3C PROV family consist of multiple documents in this system only used the data model is partially used.
+
+The three main concepts of PROV-DM are:
+
+
+\begin{description}
+	\item[Entity] 
+		\begin{quote}An entity is a physical, digital, conceptual, or other kind of thing with some fixed aspects; entities may be real or imaginary.\cite{moreau2013provdm}\end{quote}
+	\item[Activity]
+		\begin{quote}An activity is something that occurs over a period of time and acts upon or with entities; it may include consuming, processing, transforming, modifying, relocating, using, or generating entities.\cite{moreau2013provdm}\end{quote}
+	\item[Agent]
+		\begin{quote}An agent is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity.\cite{moreau2013provdm}\end{quote}
+	
+\end{description}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{pics/w3cprov.png}
+	\caption
+	{
+		Core concepts of the W3C PROV data model.
+		Source: \cite{moreau2013provdm}
+	}
+	\label{fig:prov-core}
+\end{figure}
+
+
 
 \subsection{CIDOC CRM and Museum-Specific Standards}\label{sec:related-work:standards:cidoc}
 
