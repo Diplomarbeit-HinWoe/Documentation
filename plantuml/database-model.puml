@@ -1,0 +1,461 @@
+@startuml database-model
+' ArtAdmin database model (ArtAdmin.Persistence / EF Core 10 / PostgreSQL)
+' Source of truth: ArtAdmin/ArtAdmin.Persistence/Entities + Configuration
+
+skinparam class {
+    BackgroundColor White
+    BorderColor #444444
+    ArrowColor #444444
+    AttributeFontSize 11
+}
+skinparam package {
+    BackgroundColor transparent
+    BorderColor #888888
+    FontStyle bold
+}
+skinparam note {
+    BackgroundColor #FFF8DC
+    BorderColor #AAAA66
+}
+skinparam linetype polyline
+hide circle
+
+' ---------- Shared contracts ----------
+
+together {
+interface ITableBase <<interface>> {
+    + Id : Guid  <<PK>>
+    + Status : Status
+    + CreatedAt : DateTimeOffset
+    + UpdatedAt : DateTimeOffset
+}
+note bottom of ITableBase
+    Implemented by **every** entity (members are
+    repeated concretely on each table).
+    SaveChanges auto-stamps CreatedAt/UpdatedAt.
+    Status is stored as string, default Active.
+end note
+
+interface ICoordinate <<interface>> {
+    + X : int
+    + Y : int
+    + Number : int
+}
+
+interface IFileAttachmentContainer <<interface>> {
+    + Files : ICollection<FileAttachment>
+}
+note bottom of IFileAttachmentContainer
+    Files is NOT a table relationship:
+    serialized into a jsonb column on the owner.
+end note
+}
+
+enum Status {
+    Active
+    Archived
+}
+enum DimensionType {
+    Height
+    Width
+    Depth
+    Diameter
+    Weight
+    Angle
+    DiagonalXY
+    DiagonalXZ
+    DiagonalXYZ
+}
+enum MeasurementType {
+    X
+    Y
+    Z
+    XY
+    XZ
+    XYZ
+}
+
+' ---------- Physical ----------
+
+package Physical {
+    class Entity {
+        + Title : string(100)
+        + Description : string(2000)
+        + Inscriptions : string(2000)?
+        + RightsWork : string(100)?
+        + LicenseUri : string(100)?
+        + ExtraInformation : jsonb?
+        --
+        + GroupId : Guid? <<FK>>
+        + RecordSourceId : Guid <<FK>>
+        + TypeId : Guid <<FK>>
+        + CurrentRoomId : Guid <<FK>>
+    }
+
+    class EntityGroup {
+        + Name : string(100) <<unique>>
+        + Initials : string(5)
+        + Description : string(2000)?
+        --
+        + SuperGroupId : Guid? <<FK self>>
+    }
+
+    class EntityTag {
+        + Name : string(50) <<unique>>
+        + ColorHex : string(7)
+    }
+
+    class EntityEntityTag <<join table>> {
+        + EntityId : Guid <<FK,PK>>
+        + TagId : Guid <<FK,PK>>
+    }
+
+    class InventoryNumber {
+        + Number : int
+        --
+        + EntityId : Guid <<FK, unique>>
+        + EntityGroupId : Guid? <<FK>>
+        + LocationId : Guid <<FK>>
+        --
+        + ToString() : Initials-Initials-Number
+    }
+
+    class InventoryNumberCounter {
+        + LastNumber : int
+        --
+        + EntityGroupId : Guid? <<FK>>
+        + LocationId : Guid <<FK>>
+        --
+        + NextNumber() : int
+    }
+
+    class SubPart {
+        + Name : string(100)?
+        + Description : string(2000)?
+        --
+        + ResourceId : Guid <<FK>>
+        + EntityId : Guid <<FK>>
+    }
+}
+
+' ---------- Agents ----------
+
+package Agents {
+    class Agent {
+        + Name : string(50)
+        + Email : string(50)?
+        + Group : string(255)?
+        + Phone : string(20)?
+        + MoreInformation : string(2000)?
+        + BirthDate : DateOnly?
+        + DeathDate : DateOnly?
+        + ModifyTimeSpan : TimeSpan = 7d
+        + IsKeycloakUser : bool = false
+    }
+
+    class Association <<join: Event-Agent>> {
+        + AgentRole : string(50)
+        --
+        + AgentId : Guid <<FK>>
+        + EventId : Guid <<FK>>
+        --
+        {static} InitiatorRole = "initiator"
+    }
+
+    class Attribution <<join: Entity-Agent>> {
+        + AgentRole : string(50)
+        + Description : string(250)?
+        --
+        + EntityId : Guid <<FK>>
+        + AgentId : Guid <<FK>>
+    }
+}
+
+' ---------- Events ----------
+
+package Events {
+    class Event {
+        + ObjectId : Guid
+        + ObjectType : string(100)
+        + Name : string(200)
+        + Description : string(4000)?
+        + DateEarliest : DateTimeOffset?
+        + DateLatest : DateTimeOffset?
+        + DateExact : DateTimeOffset?
+        + ChangedValues : jsonb?
+        + Files : jsonb (FileAttachment[])
+        --
+        + TypeId : Guid <<FK>>
+        + RoomId : Guid? <<FK>>
+        + ResourceId : Guid? <<FK>>
+    }
+    note right of Event
+        ObjectId + ObjectType form a loose
+        polymorphic reference (Entity, Agent,
+        Room, ...) — no database FK.
+    end note
+
+    class EventType {
+        + Name : string(50) <<unique>>
+        + Description : string(1000)?
+        + IsSystem : bool = false
+    }
+
+    class EventCoordinate {
+        + X : int
+        + Y : int
+        + Number : int
+        --
+        + EventId : Guid <<FK>>
+        --
+        unique (EventId, Number)
+    }
+}
+
+' ---------- Locations ----------
+
+package Locations {
+    class Institution {
+        + Name : string(50) <<unique>>
+    }
+
+    class Location {
+        + Name : string(50)
+        + Initials : string(5)
+        + Address : string(200)?
+        --
+        + InstitutionId : Guid <<FK>>
+    }
+
+    class Room {
+        + Number : string(20) <<unique>>
+        + Name : string(100)?
+        --
+        + LocationId : Guid <<FK>>
+    }
+
+    class EntityPosition {
+        + EntityId : Guid <<FK>>
+        + RoomId : Guid <<FK>>
+        + RoomImageId : Guid <<FK>>
+        --
+        unique (EntityId, RoomImageId)
+    }
+
+    class RoomFileAttachments <<join table>> {
+        + RoomId : Guid <<FK,PK>>
+        + FileAttachmentId : Guid <<FK,PK>>
+    }
+}
+
+' ---------- Measurements ----------
+
+package Measurements {
+    class Measurement {
+        + DimensionType : DimensionType
+        + Value : decimal
+        + Unit : string(5)
+        --
+        + EntityId : Guid <<FK>>
+        + PartId : Guid? <<FK>>
+        + ResourceId : Guid? <<FK>>
+        + Coordinate1Id : Guid? <<FK>>
+        + Coordinate2Id : Guid? <<FK>>
+    }
+
+    class Coordinate {
+        + X : int
+        + Y : int
+        + Number : int
+        --
+        + SubPartId : Guid? <<FK>>
+        --
+        unique (SubPartId, Number)
+    }
+    note bottom of Coordinate
+        Also holds a shadow FK EntityPositionId
+        backing EntityPosition.PositionPolygon.
+    end note
+}
+
+' ---------- Media ----------
+
+package Media {
+    class Resource {
+        + ResourceUri : string(200)
+        + MimeType : string(50)
+        + LicenseUri : string(200)?
+        --
+        + EntityId : Guid <<FK>>
+    }
+
+    class Material {
+        + Term : string(50)
+        + Description : string(1000)?
+    }
+
+    class FileAttachment {
+        + StorageKey : string
+        + OriginalFileName : string
+        + ContentType : string
+        + UploadedAt : DateTimeOffset
+    }
+    note bottom of FileAttachment
+        Real table (room images, position overlays)
+        AND embedded as jsonb in Event.Files /
+        RecordSource.Files.
+    end note
+}
+
+' ---------- Reference ----------
+
+package Reference {
+    class EntityType {
+        + Name : string(50) <<unique>>
+        + Description : string(1000)?
+    }
+
+    class RecordSource {
+        + Name : string(100)
+        + Description : string(2000)?
+        + Files : jsonb (FileAttachment[])
+        --
+        + RoomId : Guid <<FK>>
+    }
+
+    class EntityMaterial <<join: Entity-Material>> {
+        + EntityId : Guid <<FK>>
+        + MaterialId : Guid <<FK>>
+        --
+        unique (EntityId, MaterialId)
+    }
+}
+
+' ---------- Draft (ArtMeasure import pipeline) ----------
+
+package Draft {
+    class Draft <<sealed>> {
+        + EntityName : string(128) <<unique>>
+    }
+
+    class DraftResource <<sealed>> {
+        + ImageKey : string(250)
+        --
+        + DraftId : Guid <<FK>>
+    }
+
+    class DraftMeasurement <<sealed>> {
+        + DistanceMM : int
+        + MeasurementType : MeasurementType
+        --
+        + DraftResourceId : Guid <<FK>>
+        + Coordinate1Id : Guid <<FK>>
+        + Coordinate2Id : Guid <<FK>>
+    }
+
+    class DraftCoordinate <<sealed>> {
+        + X : int
+        + Y : int
+    }
+}
+
+' ---------- Interface implementations ----------
+
+ITableBase <|.. Entity
+ITableBase <|.. Agent
+ITableBase <|.. Event
+ITableBase <|.. Room
+ITableBase <|.. Measurement
+ITableBase <|.. Resource
+ITableBase <|.. Draft
+ICoordinate <|.. Coordinate
+ICoordinate <|.. EventCoordinate
+IFileAttachmentContainer <|.. Event
+IFileAttachmentContainer <|.. RecordSource
+
+' ---------- Enum usages ----------
+
+Measurement --> DimensionType
+DraftMeasurement --> MeasurementType
+ITableBase --> Status
+
+' ---------- Physical ----------
+
+Entity "1" *-- "0..*" Attribution
+Entity "1" *-- "0..*" EntityMaterial
+Entity "1" *-- "0..*" Measurement
+Entity "1" *-- "0..*" Resource
+Entity "1" *-- "0..*" SubPart
+Entity "1" *-- "0..*" EntityPosition
+Entity "1" -- "0..1" InventoryNumber
+Entity "0..*" --> "0..1" EntityGroup : Group >
+Entity "0..*" --> "1" RecordSource : RecordSource >
+Entity "0..*" --> "1" EntityType : Type >
+Entity "0..*" --> "1" Room : CurrentRoom >
+Entity "1" -- "0..*" EntityEntityTag
+EntityTag "1" -- "0..*" EntityEntityTag
+EntityGroup "0..1" <-- "0..*" EntityGroup : SuperGroup / SubGroups
+EntityGroup "1" <-- "0..*" Entity : Entities
+InventoryNumber "0..*" --> "0..1" EntityGroup
+InventoryNumber "0..*" --> "1" Location
+InventoryNumberCounter "0..*" --> "0..1" EntityGroup
+InventoryNumberCounter "0..*" --> "1" Location
+SubPart "0..*" --> "1" Resource
+SubPart "1" *-- "0..*" Coordinate : PolygonCoordinates
+SubPart "1" *-- "0..*" Measurement : Part
+
+' ---------- Agents ----------
+
+Agent "1" -- "0..*" Association
+Agent "1" -- "0..*" Attribution
+Association "0..*" --> "1" Event
+Attribution "0..*" --> "1" Entity
+Agent "0..*" -- "0..*" Entity : EntityAccess (implicit join)
+
+' ---------- Events ----------
+
+Event "0..*" --> "1" EventType : Type >
+Event "0..*" --> "0..1" Room : Room >
+Event "0..*" --> "0..1" Resource : Resource >
+Event "1" *-- "0..*" EventCoordinate : Coordinates
+
+' ---------- Locations ----------
+
+Institution "1" -- "0..*" Location : Locations
+Location "1" -- "0..*" Room : Rooms
+Room "1" -- "0..*" EntityPosition
+Room "1" -- "0..*" RecordSource
+Room "1" -- "0..*" Event
+Room "1" -- "0..*" RoomFileAttachments
+FileAttachment "1" -- "0..*" RoomFileAttachments : RoomImages
+EntityPosition "0..*" --> "1" Entity
+EntityPosition "0..*" --> "1" FileAttachment : RoomImage >
+EntityPosition "1" *-- "1..*" Coordinate : PositionPolygon (shadow FK)
+
+' ---------- Measurements ----------
+
+Measurement "0..*" --> "1" Entity
+Measurement "0..*" --> "0..1" SubPart : Part >
+Measurement "0..*" --> "0..1" Resource : Resource (SetNull) >
+Measurement "0..*" --> "0..1" Coordinate : Coordinate1 >
+Measurement "0..*" --> "0..1" Coordinate : Coordinate2 >
+Coordinate "0..*" --> "0..1" SubPart
+
+' ---------- Media / Reference ----------
+
+Resource "0..*" --> "1" Entity
+Resource "1" -- "0..*" SubPart
+Material "1" -- "0..*" EntityMaterial
+EntityMaterial "0..*" --> "1" Entity
+EntityType "1" -- "0..*" Entity : Entities
+RecordSource "0..*" --> "1" Room
+RecordSource "1" -- "0..*" Entity : Entities
+
+' ---------- Draft ----------
+
+Draft "1" *-- "0..*" DraftResource : Resources
+DraftResource "1" *-- "0..*" DraftMeasurement : Measurements
+DraftMeasurement "0..*" --> "1" DraftCoordinate : Coordinate1 >
+DraftMeasurement "0..*" --> "1" DraftCoordinate : Coordinate2 >
+
+@enduml
