@@ -108,52 +108,8 @@ jobs:
       - name: Set up TeX Live and compile thesis
         uses: xu-cheng/texlive-action@v2
         with:
-          scheme: 'small'
+          scheme: 'full'
           texlive_version: '2024'
-          packages: |
-            collection-fontsrecommended
-            collection-latexrecommended
-            collection-latexextra
-            collection-bibtexextra
-            biblatex
-            biber
-            xurl
-            xhyperref
-            hyperref
-            geometry
-            graphicx
-            grffile
-            float
-            caption
-            subcaption
-            booktabs
-            array
-            tabularx
-            longtable
-            multirow
-            colortbl
-            xcolor
-            todonotes
-            csquotes
-            biblatex-ieee
-            glossaries
-            glossaries-extra
-            xpatch
-            tracklang
-            etoolbox
-            mfirstuc
-            datatool
-            xfor
-            fmtcount
-            substring
-            textcase
-            xkeyval
-            kvoptions
-            kvsetkeys
-            kvdefinekeys
-            l3packages
-            l3kernel
-            l3backend
           run: |
             latexmk -pdf -interaction=nonstopmode -halt-on-error thesis.tex
             echo "✅ LaTeX compilation successful!"
