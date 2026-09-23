@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - '**.tex'
-      - '**.yml'
       - '**.bib'
+      - '**.yml'
 
 jobs:
   textidote:
@@ -113,6 +113,7 @@ jobs:
           packages: |
             collection-fontsrecommended
             collection-latexrecommended
+            collection-latexextra
             collection-bibtexextra
             biblatex
             biber
