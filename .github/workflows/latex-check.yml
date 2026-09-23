@@ -5,7 +5,6 @@ on:
     paths:
       - '**.tex'
       - '**.bib'
-      - '**.yml'
 
 jobs:
   textidote:
@@ -70,6 +69,7 @@ jobs:
             --type tex \
             --dict .textidote-dict.txt \
             --check en \
+            --read-all \
             --ci \
             thesis.tex
 
@@ -79,6 +79,7 @@ jobs:
             --type tex \
             --dict .textidote-dict.txt \
             --check en \
+            --read-all \
             --ci \
             sections/*.tex
 
