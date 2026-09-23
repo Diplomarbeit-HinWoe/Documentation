@@ -5,6 +5,7 @@ on:
     paths:
       - '**.tex'
       - '**.bib'
+      - '**.yml'
 
 jobs:
   textidote:
