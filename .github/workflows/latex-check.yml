@@ -5,6 +5,7 @@ on:
     paths:
       - '**.tex'
       - '**.bib'
+      - '**.yml'
 
 jobs:
   textidote:
@@ -21,7 +22,7 @@ jobs:
 
       - name: Download TeXtidote
         run: |
-          wget -q https://github.com/sylvainhalle/textidote/releases/download/v1.2.2/textidote.jar
+          wget -q https://github.com/sylvainhalle/textidote/releases/download/v0.9/textidote.jar
           echo "TEXTIDOTE_JAR=$(pwd)/textidote.jar" >> $GITHUB_ENV
 
       - name: Create dictionary
@@ -66,19 +67,21 @@ jobs:
       - name: Run TeXtidote on thesis.tex
         run: |
           java -jar $TEXTIDOTE_JAR \
-            --lang en \
             --type tex \
             --dict .textidote-dict.txt \
-            --output ansi \
+            --check en \
+            --read-all \
+            --ci \
             thesis.tex
 
       - name: Run TeXtidote on sections
         run: |
           java -jar $TEXTIDOTE_JAR \
-            --lang en \
             --type tex \
             --dict .textidote-dict.txt \
-            --output ansi \
+            --check en \
+            --read-all \
+            --ci \
             sections/*.tex
 
   chktex:
@@ -102,59 +105,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up TeX Live
+      - name: Set up TeX Live and compile thesis
         uses: xu-cheng/texlive-action@v2
         with:
-          scheme: 'small'
+          scheme: 'full'
           texlive_version: '2024'
-
-      - name: Install additional packages
-        run: |
-          tlmgr install \
-            collection-fontsrecommended \
-            collection-latexrecommended \
-            collection-bibtexextra \
-            biblatex \
-            biber \
-            xurl \
-            xhyperref \
-            hyperref \
-            geometry \
-            graphicx \
-            grffile \
-            float \
-            caption \
-            subcaption \
-            booktabs \
-            array \
-            tabularx \
-            longtable \
-            multirow \
-            colortbl \
-            xcolor \
-            todonotes \
-            csquotes \
-            biblatex-ieee \
-            glossaries \
-            glossaries-extra \
-            xpatch \
-            tracklang \
-            etoolbox \
-            mfirstuc \
-            datatool \
-            xfor \
-            fmtcount \
-            substring \
-            textcase \
-            xkeyval \
-            kvoptions \
-            kvsetkeys \
-            kvdefinekeys \
-            l3packages \
-            l3kernel \
-            l3backend
-
-      - name: Compile thesis
-        run: |
-          latexmk -pdf -interaction=nonstopmode -halt-on-error thesis.tex
-          echo "✅ LaTeX compilation successful!"
+          run: |
+            latexmk -pdf -interaction=nonstopmode -halt-on-error thesis.tex
+            echo "✅ LaTeX compilation successful!"
