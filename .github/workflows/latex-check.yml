@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - '**.tex'
-      - '**.bib'
       - '**.yml'
+      - '**.bib'
 
 jobs:
   textidote:
@@ -105,7 +105,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up TeX Live and install packages
+      - name: Set up TeX Live and compile thesis
         uses: xu-cheng/texlive-action@v2
         with:
           scheme: 'small'
@@ -153,8 +153,6 @@ jobs:
             l3packages
             l3kernel
             l3backend
-
-      - name: Compile thesis
-        run: |
-          latexmk -pdf -interaction=nonstopmode -halt-on-error thesis.tex
-          echo "✅ LaTeX compilation successful!"
+          run: |
+            latexmk -pdf -interaction=nonstopmode -halt-on-error thesis.tex
+            echo "✅ LaTeX compilation successful!"
