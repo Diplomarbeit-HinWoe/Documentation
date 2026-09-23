@@ -5,6 +5,7 @@ on:
     paths:
       - '**.tex'
       - '**.bib'
+      - '**.yml'
 
 jobs:
   textidote:
@@ -21,7 +22,7 @@ jobs:
 
       - name: Download TeXtidote
         run: |
-          wget -q https://github.com/sylvainhalle/textidote/releases/download/v1.2.2/textidote.jar
+          wget -q https://github.com/sylvainhalle/textidote/releases/download/v0.9/textidote.jar
           echo "TEXTIDOTE_JAR=$(pwd)/textidote.jar" >> $GITHUB_ENV
 
       - name: Create dictionary
