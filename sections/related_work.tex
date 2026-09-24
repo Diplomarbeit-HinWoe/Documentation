@@ -5,52 +5,62 @@
 \setauthor{\firstauthor}
 \section{Provenance and Collection-Data Standards}\label{sec:related-work:standards}
 
+One of the main requirements of this system is the import and export of information using established formats. This application stores not only physical properties of objects but also digital ones, such as the history of a specific object (e.g., creation date or when the data entry was created).
 
-One of the main requirements of this system is the import and export of information in the form of an established format. This application stores not only physical properties of object but also only digital ones such as a history of the specific object like the creation date or when the data entry was created.
+After analyzing existing standards, it became clear that no single standard covers all requirements of this project. For this reason, the system combines selected components of several standards. The W3C PROV data model is used to describe the origin and history of the data. Furthermore, LIDO and the Europeana Data Model are added to store cultural-heritage metadata.
 
-After analyzing existing standards it became clear that no single standard covers all requirements of this project. For that reason the system combined selected componets of several standards. The W3C Prov data model is used to describe the origin and history of the data. Furthermore LIDO and Europeana Data Model is added to store cultural-heritage metadata. 
-
-The project specific data schema does not replace these standards. Instead it combines the core features of these and extends them where necessary.
-
+The project-specific data schema does not replace these standards. Instead, it combines their core features and extends them where necessary.
 
 \subsection{W3C PROV and General Metadata Models}\label{sec:related-work:standards:prov}
-The W3C PROV familiy defines a model for describing the origin and history of any information but it does not define all metadata required for a collection object. It just stores the provenance.
+The W3C PROV family defines a model for describing the origin and history of any information, but it does not define all metadata required for a collection object. It stores only the provenance.
 
 \begin{quote}
-	Provenance is information about entities, activities, and people involved in producing a piece of data or thing, which can be used to form assessments about its quality, reliability or trustworthiness \cite{groth2013provoverview} 
+	Provenance is information about entities, activities, and people involved in producing a piece of data or thing, which can be used to form assessments about its quality, reliability or trustworthiness \cite{groth2013provoverview}.
 \end{quote}
 
-The W3C PROV family consist of multiple documents in this system only used the data model is partially used.
+The W3C PROV family consists of multiple documents; in this system, only the data model is partially used.
 
 The three main concepts of PROV-DM are:
 
-
 \begin{description}
 	\item[Entity] 
-		\begin{quote}An entity is a physical, digital, conceptual, or other kind of thing with some fixed aspects; entities may be real or imaginary.\cite{moreau2013provdm}\end{quote}
+	\begin{quote}An entity is a physical, digital, conceptual, or other kind of thing with some fixed aspects; entities may be real or imaginary.\cite{moreau2013provdm}\end{quote}
 	\item[Activity]
-		\begin{quote}An activity is something that occurs over a period of time and acts upon or with entities; it may include consuming, processing, transforming, modifying, relocating, using, or generating entities.\cite{moreau2013provdm}\end{quote}
+	\begin{quote}An activity is something that occurs over a period of time and acts upon or with entities; it may include consuming, processing, transforming, modifying, relocating, using, or generating entities.\cite{moreau2013provdm}\end{quote}
 	\item[Agent]
-		\begin{quote}An agent is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity.\cite{moreau2013provdm}\end{quote}
-	
+	\begin{quote}An agent is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity.\cite{moreau2013provdm}\end{quote}
 \end{description}
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.8\textwidth]{pics/w3cprov.png}
-	\caption
-	{
-		Core concepts of the W3C PROV data model.
-		Source: \cite{moreau2013provdm}
-	}
+	\caption{Core concepts of the W3C PROV data model. Source: \cite{moreau2013provdm}}
 	\label{fig:prov-core}
 \end{figure}
 
-
-
 \subsection{CIDOC CRM and Museum-Specific Standards}\label{sec:related-work:standards:cidoc}
+The CIDOC Conceptual Reference Model is a recognized ISO standard (ISO 21127:2023) designed to store cultural heritage data. According to version 7.1.3, this model contains 99 entity and 198 property declarations \cite{cidoccrm}. This far exceeds the scope of this project; for that reason, only parts are used in the schema of this project. Examples of the CIDOC CRM concepts used include \textit{E31 Document}, \textit{E39 Actor}, \textit{E53 Place}, and \textit{P108 has produced}.
+
+Another museum-specific standard is LIDO (Lightweight Information Describing Objects), an XML metadata schema for describing objects and works. LIDO is formally defined as an XML harvesting format designed for the exchange of cultural heritage data. The LIDO scheme uses a granular structure but defines only a few required fields to comply with the standard. This low entry barrier allows minimal but compliant records while still supporting detailed descriptions \cite{lido}.
+
+The data model in ArtAdmin is designed to satisfy the LIDO scheme. By aligning the internal model with this standard, structured import and export into other systems is enabled.
 
 \subsection{Operational and Linked-Data Standards}\label{sec:related-work:standards:spectrum}
+To enable large-scale databases that have to work with heterogeneous data, just as Europeana does, a new data schema was created: the EDM (Europeana Data Model). The predecessor, ESE (Europeana Semantic Elements), had multiple issues that were addressed through the EDM. One of the problems ESE had was its flat data model; it consisted of Dublin Core fields that only allowed strings as values. This architecture became overly complex when trying to reference other resources. This is one of the reasons EDM was developed: it solves this problem by adopting an RDF-based graph model that separates entities and linking.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{pics/edm.jpg}
+	\caption{Core concepts of EDM. Source: \cite{edmPic}}
+	\label{fig:edm-core}
+\end{figure}
+
+One requirement given by our project partner, the Augustiner-Chorherrenstift St. Florian, is that a connection to the Europeana database should be possible. For the creation of the data model for this project, EDM was not one of the core schemas that were combined because it is less detailed than standards such as LIDO and W3C PROV. However, it is compatible, and the ArtAdmin schema can be mapped to EDM.
+
+
+
+\subsection{Comparison}
+
 
 \section{Collection Management Systems and Object Identification}\label{sec:related-work:systems}
 
