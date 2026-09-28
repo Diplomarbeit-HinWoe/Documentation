@@ -1,0 +1,107 @@
+@startuml
+
+title ArtAdmin
+
+left to right direction
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam nodesep 35
+skinparam ranksep 55
+skinparam packageStyle rectangle
+skinparam ArrowColor #444444
+skinparam ArrowFontSize 9
+skinparam ArrowFontColor #222222
+skinparam ComponentBorderColor #333333
+skinparam ComponentBackgroundColor #F8F8F8
+skinparam PackageBorderColor #666666
+skinparam PackageBackgroundColor white
+skinparam dpi 150
+
+' ============================================================
+' Client layer
+' ============================================================
+package "Client Applications" as clients {
+    component "Web Application" as web
+    component "Measurement Application" as measurement
+
+    web -[hidden]down- measurement
+}
+
+' ============================================================
+' Identity layer - placed directly below clients, close by,
+' so OIDC lines stay short and do not cross other labels.
+' ============================================================
+package "Identity and Access Management" as identity {
+    component "Keycloak\nOIDC Provider" as keycloak
+}
+
+clients -[hidden]down- identity
+
+' ============================================================
+' Application layer
+' ============================================================
+package "ArtAdmin Application" as application {
+    component "Backend API" as backend
+    component "Pydantic Monty\nAI Sandbox" as monty
+
+    backend -[hidden]right- monty
+}
+
+' ============================================================
+' Infrastructure layer
+' ============================================================
+package "Infrastructure Services" as infrastructure {
+    database "PostgreSQL" as postgres
+    database "MinIO\nS3 Object Storage" as minio
+    database "Elasticsearch\nSearch Index" as elasticsearch
+    database "Redis\nCache" as redis
+
+    postgres -[hidden]down- minio
+    minio -[hidden]down- elasticsearch
+    elasticsearch -[hidden]down- redis
+}
+
+' ============================================================
+' Layout constraints
+' ============================================================
+clients -[hidden]right- application
+application -[hidden]right- infrastructure
+identity -[hidden]right- application
+
+' ============================================================
+' Client communication
+' Labels placed with ": on the near side" so they sit right
+' next to the originating component, not mid-crossing.
+' ============================================================
+web -right-> backend : "REST/HTTP API"
+measurement -right-> backend : "REST/HTTP API"
+
+' ============================================================
+' Authentication
+' Short lines now, since Keycloak sits right under clients.
+' ============================================================
+web .down.> keycloak : "OIDC login"
+measurement .down.> keycloak : "OIDC login"
+backend .down.> keycloak : "token validation"
+
+' ============================================================
+' AI execution
+' ============================================================
+backend <-right-> monty : "sandboxed\nexecution"
+
+' ============================================================
+' Infrastructure communication
+' Each label kept short and placed directly on its own arrow,
+' with line breaks to avoid overlapping neighboring arrows.
+' ============================================================
+backend -right-> postgres
+backend -right-> minio : "3D files"
+backend -right-> elasticsearch : "indexing"
+backend -right-> redis : "caching"
+
+@enduml
