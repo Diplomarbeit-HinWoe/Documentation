@@ -1,0 +1,94 @@
+@startuml
+
+title ArtAdmin Backend Architecture
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam nodesep 25
+skinparam ranksep 45
+skinparam packageStyle rectangle
+skinparam ArrowColor #444444
+skinparam ArrowFontSize 9
+skinparam ArrowFontColor #222222
+skinparam ComponentBorderColor #333333
+skinparam ComponentBackgroundColor #F8F8F8
+skinparam PackageBorderColor #666666
+skinparam PackageBackgroundColor white
+skinparam dpi 150
+
+package "Clients" as clients {
+  [ArtAdmin.Web\n(Angular Frontend)] as web
+  [ArtAdmin.ArtMeasure\n(Python Desktop, RealSense)] as artmeasure
+}
+
+package "ArtAdmin.ApiService\n(Presentation Layer)" as apilayer {
+  [Controllers\n(v1: Entities, Events, Drafts,\nLocations, Measurements, ...)] as controllers
+  [Middleware\n(Exception Handling,\nAudit, Auth Filter)] as middleware
+  [Configuration\n(Swagger, Versioning,\nDI Bootstrap)] as apiconfig
+}
+
+package "ArtAdmin.Application\n(Business Layer)" as applayer {
+  [Service Interfaces] as serviceinterfaces
+  [Services\n(Implementations)] as services
+  [DTOs] as dtos
+  [Mappers\n(AutoMapper Profiles)] as mappers
+  [Validations\n(FluentValidation)] as validations
+}
+
+package "ArtAdmin.Persistence\n(Data Access Layer)" as persistlayer {
+  [Repository Interfaces] as repointerfaces
+  [Repositories\n(Implementations)] as repos
+  [DataContext\n(EF Core)] as datacontext
+  [Entity Configurations\n& Migrations] as efconfig
+}
+
+package "Cross-Cutting" as crosscutting {
+  package "ArtAdmin.Auth" as authpkg {
+    [Keycloak Token- /\nUser-Service] as authsvc
+  }
+  package "ArtAdmin.ArtVision" as artvisionpkg {
+    [Image Re-Identification\n(ONNX / EmguCV / SIFT / ORB)] as reid
+  }
+  package "AppHost / ServiceDefaults\n(.NET Aspire)" as aspirepkg {
+    [Service Orchestration\n& Health Checks] as orchestration
+  }
+}
+
+package "Infrastructure" as infra {
+  database "PostgreSQL" as postgres
+  cloud "Elasticsearch" as elastic
+  cloud "MinIO" as minio
+  cloud "Keycloak" as keycloakext
+}
+
+web --> controllers : REST/HTTPS
+artmeasure --> controllers : REST/HTTPS
+
+controllers --> middleware
+middleware --> authsvc : auth check
+controllers --> serviceinterfaces : calls
+
+serviceinterfaces <|.. services
+services --> dtos
+services --> mappers
+services --> validations
+services --> repointerfaces : uses
+services --> reid : image matching
+services --> elastic : full-text search
+services --> minio : file storage
+
+authsvc --> keycloakext : OIDC/OAuth2
+
+repointerfaces <|.. repos
+repos --> datacontext
+datacontext --> efconfig
+datacontext --> postgres : SQL/EF Core
+
+orchestration ..> apilayer : orchestrates
+orchestration ..> persistlayer : orchestrates
+
+@enduml
