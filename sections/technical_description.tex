@@ -22,8 +22,83 @@ This software solution uses four additional services, all of which can be self-h
 \subsection{Frontend Implementation}\label{sec:implementation:frontend:implementation}
 
 \section{Backend and Data Model}\label{sec:implementation:backend}
+\subsection{Choice of Backend Technology \cite{backend-technology-cleanup} }\label{sec:implementation:backend:technology-choice}
 
-\subsection{Backend Architecture}\label{sec:implementation:backend:architecture}
+For the backend of ArtAdmin, C\# with ASP.NET~Core was chosen over alternative technology stacks such as Java (Spring Boot, Quarkus), Go, and TypeScript (NestJS). The requirements for this project were that the technology be strongly typed and maintainable, and that it integrate seamlessly with the planned architecture, including Entity Framework~Core, PostgreSQL, Elasticsearch, MinIO, Redis, Keycloak, and .NET~Aspire. \cite{aiComponentDiagram}
+
+The following table compares ASP.NET Core with Spring Boot, Quarkus, Gin (Go), and NestJS (TypeScript) with respect to the criteria relevant to ArtAdmin.
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{table}[!h]
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\renewcommand{\arraystretch}{1}
+	\caption{Comparison of backend technology candidates for ArtAdmin. \newline
+		\textit{Performance}: TechEmpower Round~23, Fortunes test, PostgreSQL,
+		requests per second (req/s), rank among 523 tests \cite{techempower2025r23}.}
+	\label{tab:backend-language-comparison}
+	\begin{tabular}{@{}L{0.12\textwidth}@{\hspace{1.5em}}L{0.09\textwidth} L{0.39\textwidth} L{0.16\textwidth} L{0.12\textwidth}@{}}
+		\toprule
+		\textbf{Technology} &
+		\textbf{Typing} &
+		\textbf{Performance (Fortunes, R23)} &
+		\textbf{Resource usage} &
+		\textbf{Relevant characteristics} \\
+		\midrule
+		
+		\textbf{C\# / ASP.NET~Core} &
+		Static, object-oriented &
+		\textbf{Best entry:} aspnetcore, 741{,}878\,req/s (rank 35)\newline
+		\textbf{Full-stack:} aspnetcore-mvc, 322{,}802\,req/s (rank 122)\newline
+		\textit{Analysis:} reference values for the comparison. &
+		Not evaluated in the selected Spring Boot--Quarkus study. &
+		Built-in dependency injection and middleware support \cite{aspnet-dependency-injection}. \\
+		\midrule
+		
+		\textbf{Java / Spring~Boot} &
+		Static, object-oriented &
+		\textbf{Best entry:} spring-webflux-r2dbc, 245{,}588\,req/s (rank 177)\newline
+		\textbf{Full-stack:} spring, 243{,}639\,req/s (rank 179)\newline
+		\textit{Analysis:} 33\,\% (best) and 75\,\% (full-stack) of the ASP.NET~Core values. &
+		Higher startup time, CPU and RAM usage than Quarkus in the selected study \cite{alzaeim2025quarkus}. &
+		Large, established Java ecosystem. \\
+		\cmidrule(l){1-5}
+		
+		\textbf{Java / Quarkus} &
+		Static, object-oriented &
+		\textbf{Best entry:} quarkus, vert.x, 1{,}028{,}408\,req/s (rank 14)\newline
+		\textbf{Full-stack:} quarkus, 431{,}464\,req/s (rank 89)\newline
+		\textit{Analysis:} 1.39$\times$ (best) and 1.34$\times$ (full-stack) the ASP.NET~Core values. &
+		Lower startup time, CPU and RAM usage than Spring Boot in the selected study \cite{alzaeim2025quarkus}. &
+		Supports JVM and GraalVM native executable deployments \cite{quarkus-native-build}. \\
+		\midrule
+		
+		\textbf{Go} &
+		Static, compiled &
+		\textbf{Best entry:} fasthttp-prefork, 959{,}399\,req/s (rank 17)\newline
+		\textbf{Full-stack:} goravel fiber, 549{,}130\,req/s (rank 62)\newline
+		\textit{Analysis:} 1.29$\times$ (best) and 1.70$\times$ (full-stack) the ASP.NET~Core values. &
+		Not evaluated in the selected resource-usage study. &
+		The standard library provides HTTP client and server implementations \cite{go-http}. \\
+		\midrule
+		
+		\textbf{TypeScript / NestJS} &
+		Statically typed source code, transpiled to JavaScript &
+		\textbf{Best entry:} nestjs-fastify, 160{,}502\,req/s (rank 230)\newline
+		\textbf{Default entry:} nestjs, 82{,}444\,req/s (rank 321)\newline
+		\textit{Analysis:} 22\,\% (best) and 26\,\% (default vs.\ full-stack) of the ASP.NET~Core values. No full-stack-class NestJS entry exists. &
+		Not evaluated in the selected resource-usage study. &
+		Uses modules, providers and dependency injection \cite{nestjs-fundamentals}. \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+The comparison shows that all considered technologies are technically capable of implementing the ArtAdmin backend. Go and Quarkus achieve higher throughput in the selected TechEmpower benchmark, while Quarkus also provides advantages for applications that require very short startup times or a low memory footprint. However, these advantages are mainly relevant for serverless applications, edge deployments, or a large number of small services that are started frequently. ArtAdmin is designed as a long-running, containerized REST application. Its main workload consists of communication with PostgreSQL, MinIO, Elasticsearch, Redis, and Keycloak. Therefore, the maximum HTTP throughput of the framework is not the main limiting factor for the expected workload.
+
+Quarkus was considered the main alternative to ASP.NET~Core because it is a modern Java framework with support for REST APIs, dependency injection, containerized development, and integrations for the required infrastructure services. The benchmark results show that Quarkus can achieve higher throughput than ASP.NET~Core in the selected test scenario. Nevertheless, the advantages of Quarkus in startup time and memory consumption are most significant when the application is compiled as a GraalVM native executable. Native compilation requires additional build time and may require explicit configuration of reflection and dynamic class loading \cite{quarkus-native-build,quarkus-native-tips}. These additional requirements are not necessary for ArtAdmin because the backend is intended to run continuously as a containerized service.
+
+The developer team has experience in both Java and C\#. However, through a previous project and the focus of the previous school year, the team has more extensive practical knowledge of C\# and the .NET stack. This includes the development of REST APIs, database applications, Docker-based deployments, Kubernetes environments, and authentication with Keycloak, PostgreSQL, and Elasticsearch. By choosing C\#, the implementation risk was reduced, which allows the team to focus on project requirements such as the data model and other features. Existing skills and project-specific constraints are relevant factors when selecting a programming language ecosystem \cite{deldar2021ecosystemselection}. For these reasons, C\# was selected as the backend technology for this project. This decision does not imply that Quarkus, Go, or TypeScript-based frameworks are technically unsuitable, but in this use case, given the experience of the developer team, .NET is the best choice.
 
 \subsection{Object and Provenance Data Model}\label{sec:implementation:backend:data-model}
 
