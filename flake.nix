@@ -9,28 +9,27 @@
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+      texFor = pkgs: pkgs.texliveMedium.withPackages (ps: [
+        ps.latexmk
+        ps.ieeetran
+        ps."collection-latexextra"
+        ps."collection-langgerman"
+      ]);
     in
     {
       devShells = forAllSystems (pkgs:
         let
-          tex = pkgs.texlive.combine {
-            inherit (pkgs.texlive)
-              scheme-medium
-              collection-latexextra
-              collection-langgerman
-              IEEEtran
-              latexmk
-              ;
-          };
+          tex = texFor pkgs;
         in
         {
           default = pkgs.mkShell {
-            buildInputs = [ tex pkgs.perl ];
+            buildInputs = [ tex pkgs.perl pkgs.plantuml ];
             shellHook = ''
               echo "LaTeX thesis shell ready."
               echo "  nix run .#build     — build thesis.pdf"
               echo "  nix run .#watch     — auto-rebuild on changes"
               echo "  nix run .#clean     — remove generated files"
+              echo "  nix run .#diagrams  — render diagrams/*.puml to PNG + SVG"
               echo "  latexmk thesis.tex  — use the project .latexmkrc"
             '';
           };
@@ -38,15 +37,7 @@
 
       packages = forAllSystems (pkgs:
         let
-          tex = pkgs.texlive.combine {
-            inherit (pkgs.texlive)
-              scheme-medium
-              collection-latexextra
-              collection-langgerman
-              IEEEtran
-              latexmk
-              ;
-          };
+          tex = texFor pkgs;
         in
         {
           thesis = pkgs.stdenvNoCC.mkDerivation {
@@ -71,15 +62,7 @@
 
       apps = forAllSystems (pkgs:
         let
-          tex = pkgs.texlive.combine {
-            inherit (pkgs.texlive)
-              scheme-medium
-              collection-latexextra
-              collection-langgerman
-              IEEEtran
-              latexmk
-              ;
-          };
+          tex = texFor pkgs;
 
           build = pkgs.writeShellScriptBin "build-thesis" ''
             export PATH="${pkgs.lib.makeBinPath [ tex pkgs.perl ]}:$PATH"
@@ -108,6 +91,14 @@
             export PATH="${pkgs.lib.makeBinPath [ tex pkgs.perl ]}:$PATH"
             latexmk -pvc -pdf thesis.tex
           '';
+
+          diagrams = pkgs.writeShellScriptBin "render-diagrams" ''
+            export PATH="${pkgs.lib.makeBinPath [ pkgs.plantuml ]}:$PATH"
+            export PLANTUML_LIMIT_SIZE=16384
+            set -e
+            plantuml -tpng diagrams/*.puml
+            plantuml -tsvg diagrams/*.puml
+          '';
         in
         {
           default = {
@@ -125,6 +116,10 @@
           watch = {
             type = "app";
             program = "${watch}/bin/watch-thesis";
+          };
+          diagrams = {
+            type = "app";
+            program = "${diagrams}/bin/render-diagrams";
           };
         });
     };

@@ -1,0 +1,317 @@
+@startuml
+
+!pragma layout elk
+
+title ArtAdmin Data Model
+
+' Layout handled by the ELK engine (portrait, rotate for print)
+
+skinparam linetype polyline
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam nodesep 30
+skinparam ranksep 50
+skinparam packageStyle rectangle
+skinparam ArrowColor #444444
+skinparam ArrowFontSize 9
+skinparam ArrowFontColor #222222
+skinparam ClassBorderColor #333333
+skinparam ClassBackgroundColor #F8F8F8
+skinparam ClassAttributeFontSize 8
+skinparam PackageBorderColor #666666
+skinparam PackageBackgroundColor white
+skinparam NoteBorderColor #666666
+skinparam NoteBackgroundColor #F8F8F8
+skinparam dpi 150
+
+legend bottom left
+    All entities implement **ITableBase**:
+    Id : Guid, Status : Status (Active / Archived),
+    CreatedAt / UpdatedAt : DateTimeOffset
+
+    Not drawn: Agent M:N Entity modify-access
+    (shadow join table, no payload)
+endlegend
+
+' ============================================================
+' Physical
+' ============================================================
+package "Physical" as physical {
+    class Entity {
+        Title : string
+        Description : string
+        Inscriptions : string?
+        RightsWork : string?
+        LicenseUri : string?
+        ExtraInformation : jsonb?
+    }
+    class EntityGroup {
+        Name : string
+        Initials : string
+        Description : string?
+    }
+    class SubPart {
+        Name : string?
+        Description : string?
+    }
+    class EntityTag {
+        Name : string
+        ColorHex : string
+    }
+    class InventoryNumber {
+        Number : int
+    }
+    class InventoryNumberCounter {
+        LastNumber : int
+    }
+}
+
+' ============================================================
+' Agents
+' ============================================================
+package "Agents" as agents {
+    class Agent {
+        Name : string
+        Email : string?
+        Phone : string?
+        Group : string?
+        BirthDate : DateOnly?
+        DeathDate : DateOnly?
+        IsKeycloakUser : bool
+        ModifyTimeSpan : TimeSpan
+        MoreInformation : string?
+    }
+    class Association {
+        AgentRole : string
+    }
+    class Attribution {
+        AgentRole : string
+        Description : string?
+    }
+}
+
+' ============================================================
+' Events
+' ============================================================
+package "Events" as events {
+    class Event {
+        ObjectId : Guid
+        ObjectType : string
+        Name : string
+        Description : string?
+        DateEarliest : DateTimeOffset?
+        DateLatest : DateTimeOffset?
+        DateExact : DateTimeOffset?
+        ChangedValues : jsonb?
+        Files : jsonb
+    }
+    class EventType {
+        Name : string
+        Description : string?
+        IsSystem : bool
+    }
+    class EventCoordinate {
+        X : int
+        Y : int
+        Number : int
+    }
+}
+
+' ============================================================
+' Locations
+' ============================================================
+package "Locations" as locations {
+    class Institution {
+        Name : string
+    }
+    class Location {
+        Name : string
+        Initials : string
+        Address : string?
+    }
+    class Room {
+        Number : string
+        Name : string?
+    }
+    class EntityPosition
+}
+
+' ============================================================
+' Media
+' ============================================================
+package "Media" as media {
+    class Resource {
+        ResourceUri : string
+        MimeType : string
+        LicenseUri : string?
+    }
+    class Material {
+        Term : string
+        Description : string?
+    }
+    class FileAttachment {
+        StorageKey : string
+        OriginalFileName : string
+        ContentType : string
+        UploadedAt : DateTimeOffset
+    }
+}
+
+' ============================================================
+' Measurements
+' ============================================================
+package "Measurements" as measurements {
+    class Measurement {
+        DimensionType : DimensionType
+        Value : decimal
+        Unit : string
+    }
+    class Coordinate {
+        X : int
+        Y : int
+        Number : int
+    }
+    enum DimensionType {
+        Height
+        Width
+        Depth
+        Diameter
+        Weight
+        Angle
+        DiagonalXY
+        DiagonalXZ
+        DiagonalXYZ
+    }
+}
+
+' ============================================================
+' Reference
+' ============================================================
+package "Reference" as reference {
+    class EntityType {
+        Name : string
+        Description : string?
+    }
+    class RecordSource {
+        Name : string
+        Description : string?
+        Files : jsonb
+    }
+    class EntityMaterial
+}
+
+' ============================================================
+' Draft (ArtMeasure capture)
+' ============================================================
+package "Draft" as draft {
+    class Draft {
+        EntityName : string
+    }
+    class DraftResource {
+        ImageKey : string
+    }
+    class DraftMeasurement {
+        DistanceMM : int
+        MeasurementType : MeasurementType
+    }
+    class DraftCoordinate {
+        X : int
+        Y : int
+    }
+    enum MeasurementType {
+        X
+        Y
+        Z
+        XY
+        XZ
+        XYZ
+    }
+}
+
+' ============================================================
+' Layout: ELK engine arranges the packages automatically;
+' no manual hidden-link constraints needed.
+' ============================================================
+
+' ============================================================
+' Locations hierarchy
+' ============================================================
+Institution "1" -- "0..*" Location
+Location "1" -- "0..*" Room
+
+' ============================================================
+' Entity core relations
+' ============================================================
+Entity "0..*" -- "1" EntityType
+Entity "0..*" -- "1" RecordSource
+Entity "0..*" -- "0..1" EntityGroup
+EntityGroup "0..1" -- "0..*" EntityGroup
+Entity "1" -- "0..1" InventoryNumber
+Entity "1" -- "0..*" Measurement
+Entity "1" -- "0..*" Resource
+Entity "1" -- "0..*" SubPart
+Entity "1" -- "0..*" EntityPosition
+Entity "1" -- "0..*" Attribution
+Entity "0..*" -- "0..*" EntityTag : tags
+Entity "1" -- "0..*" EntityMaterial
+Material "1" -- "0..*" EntityMaterial
+
+' ============================================================
+' Inventory numbers
+' ============================================================
+InventoryNumber "0..*" -- "1" Location
+InventoryNumber "0..*" -- "0..1" EntityGroup
+InventoryNumberCounter "0..*" -- "1" Location
+InventoryNumberCounter "0..*" -- "0..1" EntityGroup
+
+' ============================================================
+' Room relations
+' ============================================================
+Room "1" -- "0..*" Entity : CurrentRoom
+Room "1" -- "0..*" Event
+Room "1" -- "0..*" RecordSource
+Room "0..*" -- "0..*" FileAttachment : RoomImages
+
+' ============================================================
+' Agents / Events
+' ============================================================
+Agent "1" -- "0..*" Association
+Event "1" -- "0..*" Association
+Agent "1" -- "0..*" Attribution
+Event "0..*" -- "1" EventType
+Event "1" -- "0..*" EventCoordinate
+Event "0..*" -- "0..1" Resource
+note right of Event
+    ObjectId / ObjectType:
+    polymorphic reference
+    to any object (no FK)
+end note
+
+' ============================================================
+' SubParts / Measurements / Positions
+' ============================================================
+SubPart "0..*" -- "1" Resource
+SubPart "1" -- "0..*" Coordinate : PolygonCoordinates
+SubPart "1" -- "0..*" Measurement
+Measurement "0..*" -- "0..1" Resource
+Measurement "0..*" -- "0..1" Coordinate : endpoints
+EntityPosition "0..*" -- "1" Room
+EntityPosition "0..*" -- "1" FileAttachment : RoomImage
+EntityPosition "1" -- "0..*" Coordinate : PositionPolygon
+
+' ============================================================
+' Drafts
+' ============================================================
+Draft "1" -- "0..*" DraftResource
+DraftResource "1" -- "0..*" DraftMeasurement
+DraftMeasurement "0..*" -- "1" DraftCoordinate : endpoints
+
+' ============================================================
+' Enums
+' ============================================================
+Measurement .. DimensionType
+DraftMeasurement .. MeasurementType
+
+@enduml
