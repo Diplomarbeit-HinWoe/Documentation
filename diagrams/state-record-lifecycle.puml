@@ -1,0 +1,14 @@
+@startuml state-record-lifecycle
+!include _style.puml
+skinparam ranksep 50
+skinparam nodesep 60
+left to right direction
+
+state "Active" as active : visible in lists and search
+state "Archived" as archived : hidden by default,\ndata kept
+
+[*] --> active : create\n(Created event)
+active --> active : update\n(Modified event)
+active --> archived : archive\n(Archived event)
+archived --> active : unarchive\n(Unarchived event)
+@enduml

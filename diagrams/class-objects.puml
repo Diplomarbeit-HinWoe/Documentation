@@ -1,0 +1,81 @@
+@startuml class-objects
+!include _style.puml
+skinparam nodesep 26
+skinparam ranksep 40
+
+class Entity {
+  Title : string
+  Description : string
+  Inscriptions : string?
+  RightsWork : string?
+  LicenseUri : string?
+  ExtraInformation : JsonDocument?
+}
+
+class EntityGroup {
+  Name : string
+  Initials : string
+  Description : string?
+  InventoryNumberPrefix : string?
+}
+
+class EntityType {
+  Name : string
+  Description : string?
+}
+
+class EntityTag {
+  Name : string
+  ColorHex : string
+}
+
+class RecordSource {
+  Name : string
+  Description : string?
+}
+
+class Material {
+  Term : string
+  Description : string?
+}
+
+class InventoryNumber {
+  Kind : InventoryNumberKind
+  Number : int?
+  CustomValue : string?
+  CustomValueNormalized : string?
+  --
+  ToString() : string
+  {static} Format(...) : string
+  {static} Normalize(value) : string
+}
+
+class InventoryNumberCounter {
+  LastNumber : int
+  --
+  NextNumber() : int
+}
+
+enum InventoryNumberKind {
+  Generated
+  Custom
+}
+
+class Room $stub
+class Location $stub
+
+Entity "*" -up-> "1" EntityType : type
+Entity "*" -up-> "1" RecordSource : source
+Entity "*" -up-> "1" Room : current room
+Entity "1" *-right- "0..1" InventoryNumber
+Entity "*" -down- "*" EntityTag : tags
+Entity "*" -down- "*" Material : materials
+Entity "*" -down-> "0..1" EntityGroup : group
+
+EntityGroup "0..1" o-- "*" EntityGroup : sub groups
+InventoryNumber .up.> InventoryNumberKind
+InventoryNumber "*" -down-> "0..1" EntityGroup
+InventoryNumber "*" -down-> "0..1" Location
+InventoryNumberCounter "*" -up-> "0..1" EntityGroup
+InventoryNumberCounter "*" -up-> "1" Location
+@enduml

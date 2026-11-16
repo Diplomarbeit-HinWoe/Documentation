@@ -1,0 +1,45 @@
+@startuml usecase-roles
+!include _style.puml
+left to right direction
+skinparam nodesep 24
+skinparam ranksep 60
+
+actor "Viewer" as viewer
+actor "Contributor" as contributor
+actor "Creator" as creator
+actor "Institution\nadministrator" as admin
+actor "Global\nadministrator" as global
+
+viewer <|- contributor
+contributor <|- creator
+creator <|- admin
+admin <|- global
+
+rectangle "ArtAdmin" {
+  usecase "Browse and search records" as browse
+  usecase "Identify an object by photo" as reid
+  usecase "View change history" as history
+  usecase "Export lists as CSV" as csv
+  usecase "Ask the ArtPilot assistant\n(if enabled for the institution)" as pilot
+  usecase "Edit own records\n(within the edit window)" as editown
+  usecase "Register objects and\nother records" as create
+  usecase "Capture measurements\nwith ArtMeasure" as measure
+  usecase "Convert a draft\ninto an object" as convert
+  usecase "Edit any record" as edit
+  usecase "Archive and restore records" as archive
+  usecase "Manage institutions\nand memberships" as tenants
+}
+
+viewer --> browse
+viewer --> reid
+viewer --> history
+viewer --> csv
+viewer --> pilot
+contributor --> editown
+creator --> create
+creator --> measure
+creator --> convert
+admin --> edit
+admin --> archive
+global --> tenants
+@enduml

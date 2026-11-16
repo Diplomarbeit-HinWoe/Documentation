@@ -1,0 +1,56 @@
+{
+    "InternalPDFViewer": {
+        "Embedded": true,
+        "File": "thesis.pdf"
+    },
+    "Session": {
+        "Bookmarks": [
+        ],
+        "CurrentFile": "sections/technical_description.tex",
+        "FileVersion": 1,
+        "Files": [
+            {
+                "Col": 0,
+                "EditorGroup": 0,
+                "FileName": "thesis.tex",
+                "FirstLine": 54,
+                "FoldedLines": "",
+                "Line": 75
+            },
+            {
+                "Col": 20,
+                "EditorGroup": 0,
+                "FileName": "sections/technical_description.tex",
+                "FirstLine": 80,
+                "FoldedLines": "",
+                "Line": 172
+            },
+            {
+                "Col": 22,
+                "EditorGroup": 0,
+                "FileName": "header.tex",
+                "FirstLine": 104,
+                "FoldedLines": "",
+                "Line": 31
+            },
+            {
+                "Col": 0,
+                "EditorGroup": 0,
+                "FileName": "global-const.tex",
+                "FirstLine": 0,
+                "FoldedLines": "",
+                "Line": 0
+            },
+            {
+                "Col": 0,
+                "EditorGroup": 0,
+                "FileName": "bib.bib",
+                "FirstLine": 83,
+                "FoldedLines": "",
+                "Line": 102
+            }
+        ],
+        "MasterFile": "thesis.tex",
+        "VerticalSplit": false
+    }
+}

@@ -1,0 +1,38 @@
+@startuml seq-auth-request
+!include _style.puml
+hide footbox
+skinparam maxMessageSize 165
+
+actor "User" as user
+participant "Web app\n(Angular)" as spa
+participant "Keycloak" as kc
+participant "API" as api
+database "Redis" as redis
+database "PostgreSQL" as db
+
+== Login (OpenID Connect, authorization code flow with PKCE) ==
+user -> spa : open application
+spa -> kc : redirect to login page
+user -> kc : enter credentials
+kc --> spa : authorization code
+spa -> kc : exchange code
+kc --> spa : access token (JWT)
+spa -> api : GET /api/v1/agents/me
+api --> spa : agent, memberships
+
+== Every API request ==
+spa -> api : request with bearer token and X-Institution-Id
+api -> api : validate token signature
+api -> db : load memberships of the agent
+db --> api : institution, group
+api -> api : map group to roles\n(claims transformation)
+alt role allows the endpoint
+  api -> redis : read agent identity (cached 60 s)
+  redis --> api
+  api -> db : query limited to the institution
+  db --> api
+  api --> spa : 200 with data
+else role missing
+  api --> spa : 403 Forbidden
+end
+@enduml

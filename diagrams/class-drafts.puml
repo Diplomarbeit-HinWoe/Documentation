@@ -1,0 +1,40 @@
+@startuml class-drafts
+!include _style.puml
+skinparam nodesep 40
+skinparam ranksep 40
+
+class Draft {
+  EntityName : string
+}
+
+class DraftResource {
+  ImageKey : string
+}
+
+class DraftMeasurement {
+  DistanceMM : int
+  MeasurementType : MeasurementType
+}
+
+class DraftCoordinate {
+  X : int
+  Y : int
+}
+
+enum MeasurementType {
+  X
+  Y
+  Z
+  XY
+  XZ
+  XYZ
+}
+
+class Entity $stub
+
+Draft "1" *-right- "*" DraftResource
+DraftResource "1" *-down- "*" DraftMeasurement
+DraftMeasurement "*" -right-> "2" DraftCoordinate : end points
+DraftMeasurement .down.> MeasurementType
+Draft .down.> Entity : converted to
+@enduml

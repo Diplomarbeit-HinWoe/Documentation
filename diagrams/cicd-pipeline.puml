@@ -1,0 +1,37 @@
+@startuml cicd-pipeline
+!include _style.puml
+skinparam wrapWidth 210
+
+|Developer|
+start
+:Open a pull request
+to main;
+|GitHub Actions|
+:Check the backend (generate
+client, build images with Aspire)
+and the frontend (production
+build, bundle budget);
+|Developer|
+:Merge, or push to the
+staging / production
+branch;
+|GitHub Actions|
+:Build the API, generate the
+OpenAPI specification
+and commit it;
+:Build the API and web images
+with Aspire, push them to GHCR
+(tag latest, staging or production);
+|Kubernetes|
+:Restart the backend
+and web deployments
+of the environment;
+|GitHub Actions|
+if (ArtMeasure changed?\n(main and staging only)) then (yes)
+  :Build ArtMeasure
+  (PyInstaller, Linux
+  and Windows);
+else (no)
+endif
+stop
+@enduml

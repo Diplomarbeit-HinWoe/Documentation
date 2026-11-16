@@ -1,0 +1,66 @@
+@startuml class-history
+!include _style.puml
+skinparam nodesep 36
+skinparam ranksep 40
+
+class Event {
+  ObjectId : Guid
+  ObjectType : string
+  Name : string
+  Description : string?
+  DateExact : DateTimeOffset?
+  DateEarliest : DateTimeOffset?
+  DateLatest : DateTimeOffset?
+  ChangedValues : JsonDocument?
+}
+
+class EventType {
+  Name : string
+  Description : string?
+  IsSystem : bool
+}
+
+class EventCoordinate {
+  X : int
+  Y : int
+  Number : int
+}
+
+class Association {
+  AgentRole : string
+}
+
+class FileAttachment {
+  StorageKey : string
+  OriginalFileName : string
+  ContentType : string
+  UploadedAt : DateTimeOffset
+}
+
+class Agent $stub
+class Room $stub
+class Resource $stub
+
+Event "*" -up-> "1" EventType : type
+Event "1" *-down- "*" EventCoordinate
+Event "1" *-down- "*" Association
+Event "1" o-down- "*" FileAttachment : files
+Association "*" -down-> "1" Agent
+Event "*" --down-> "0..1" Room
+Event "*" --down-> "0..1" Resource
+
+note left of EventType
+  System types seeded per institution:
+  Created, Modified, Archived, Unarchived
+end note
+
+note left of Event
+  ObjectId and ObjectType
+  reference any record
+  (object, group, room, ...).
+  A Modified event keeps the
+  old and new values of the
+  changed fields in
+  ChangedValues.
+end note
+@enduml

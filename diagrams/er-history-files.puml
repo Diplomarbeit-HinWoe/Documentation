@@ -1,0 +1,68 @@
+@startuml er-history-files
+!include _style.puml
+left to right direction
+skinparam nodesep 8
+skinparam ranksep 22
+hide methods
+
+entity "Events" as Event {
+  ChangedValues : jsonb
+  DateEarliest : timestamptz
+  DateExact : timestamptz
+  DateLatest : timestamptz
+  Description : text
+  Files : jsonb
+  Name : text
+  ObjectId : uuid
+  ObjectType : text
+  ResourceId <<FK>>
+  RoomId <<FK>>
+  TypeId <<FK>>
+}
+entity "EventTypes" as EventType {
+  Description : text
+  IsSystem : bool
+  Name : text
+}
+entity "EventCoordinates" as EventCoordinate {
+  EventId <<FK>>
+  Number : int
+  X : int
+  Y : int
+}
+entity "Associations" as Association {
+  AgentId <<FK>>
+  AgentRole : text
+  EventId <<FK>>
+}
+entity "FileAttachments" as FileAttachment {
+  ContentType : text
+  OriginalFileName : text
+  StorageKey : text
+  UploadedAt : timestamptz
+}
+entity "RoomFileAttachments" as RoomFileAttachments {
+  FileAttachmentId <<FK>>
+  RoomId <<FK>>
+}
+entity "EntityGroupFileAttachments" as EntityGroupFileAttachments {
+  EntityGroupId <<FK>>
+  FileAttachmentId <<FK>>
+}
+entity "Agents" as Agent $stub
+entity "EntityGroups" as EntityGroup $stub
+entity "Resources" as Resource $stub
+entity "Rooms" as Room $stub
+
+Agent ||--o{ Association
+Event ||--o{ Association
+Resource |o--o{ Event
+Room |o--o{ Event
+EventType ||--o{ Event
+Event ||--o{ EventCoordinate
+EntityGroup ||--o{ EntityGroupFileAttachments
+FileAttachment ||--o{ EntityGroupFileAttachments
+FileAttachment ||--o{ RoomFileAttachments
+Room ||--o{ RoomFileAttachments
+
+@enduml

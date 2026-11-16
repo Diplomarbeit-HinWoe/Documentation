@@ -1,0 +1,27 @@
+@startuml backend-layers
+!include _style.puml
+skinparam nodesep 22
+skinparam ranksep 40
+skinparam wrapWidth 260
+
+rectangle "<b>ArtAdmin.AppHost</b>\n<size:11>Aspire orchestration</size>\n<size:11>(local stack, image build)</size>" as host #EDEDED
+
+rectangle "<b>ArtAdmin.ApiService</b>\n<size:11>controllers v1, middleware,</size>\n<size:11>configuration, CopilotService</size>" as api
+rectangle "<b>ArtAdmin.ServiceDefaults</b>\n<size:11>telemetry, health checks</size>" as defaults #EDEDED
+
+rectangle "<b>ArtAdmin.Application</b>\n<size:11>services (BaseService and one</size>\n<size:11>per domain), DTOs, validators,</size>\n<size:11>mappers, search, export,</size>\n<size:11>startup initialisers</size>" as app
+
+rectangle "<b>ArtAdmin.Auth</b>\n<size:11>token validation,</size>\n<size:11>institution roles,</size>\n<size:11>authorization policies,</size>\n<size:11>Keycloak services</size>" as auth
+rectangle "<b>ArtAdmin.ArtVision</b>\n<size:11>feature extraction</size>\n<size:11>(DINOv2, ONNX),</size>\n<size:11>similarity, twin</size>\n<size:11>re-ranking, thumbnails</size>" as vision
+rectangle "<b>ArtAdmin.Persistence</b>\n<size:11>DataContext, entities,</size>\n<size:11>migrations, repositories,</size>\n<size:11>tenant scope</size>" as pers
+
+host --> api
+api -right-> defaults
+api --> app
+api --> auth
+api --> vision
+api --> pers
+app --> auth
+app --> vision
+app --> pers
+@enduml

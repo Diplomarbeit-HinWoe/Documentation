@@ -1,0 +1,86 @@
+@startuml class-tenancy-agents
+!include _style.puml
+skinparam nodesep 40
+skinparam ranksep 40
+
+interface ITableBase {
+  Id : Guid
+  CreatedAt : DateTimeOffset
+  UpdatedAt : DateTimeOffset
+  Status : Status
+}
+interface ITenantScoped {
+  InstitutionId : Guid
+}
+enum Status {
+  Active
+  Archived
+}
+
+class Institution {
+  Name : string
+  Domain : string?
+  Description : string?
+  AiEnabled : bool
+  LogoObjectKey : string?
+}
+
+class InstitutionMembership {
+  Group : MembershipGroup
+}
+
+enum MembershipGroup {
+  Administrator
+  Creator
+  Contributor
+  Viewer
+}
+
+class Agent {
+  Name : string
+  Email : string?
+  Phone : string?
+  BirthDate : DateOnly?
+  DeathDate : DateOnly?
+  IsKeycloakUser : bool
+  ModifyTimeSpan : TimeSpan
+}
+
+class Location {
+  Name : string
+  Initials : string
+  Address : string?
+}
+
+class Room {
+  Number : string
+  Name : string?
+}
+
+class EntityPosition {
+  PositionPolygon : Coordinate[*]
+}
+
+class Attribution {
+  AgentRole : string
+  Description : string?
+}
+
+class Entity $stub
+
+ITableBase <|-down- ITenantScoped
+ITableBase .right.> Status
+ITenantScoped "*" -down-> "1" Institution : owner
+
+Institution "1" *-down- "*" Location
+Institution "1" *-down- "*" InstitutionMembership
+Location "1" *-down- "*" Room
+InstitutionMembership "*" -down-> "1" Agent
+InstitutionMembership .right.> MembershipGroup
+Room "1" *-down- "*" EntityPosition
+Agent "1" <-down- "*" Attribution
+EntityPosition "*" -down-> "1" Entity
+Attribution "*" -down-> "1" Entity
+Room "1" o-down- "*" Entity : current room
+Agent "*" -down-> "*" Entity : entity access
+@enduml
