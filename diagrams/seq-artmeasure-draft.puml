@@ -1,0 +1,41 @@
+@startuml seq-artmeasure-draft
+!include _style.puml
+hide footbox
+skinparam maxMessageSize 170
+skinparam wrapWidth 320
+
+actor "Operator" as op
+participant "ArtMeasure" as am
+participant "RealSense\ncamera" as cam
+participant "Keycloak" as kc
+participant "API" as api
+
+== Sign in ==
+op -> am : start, sign in
+am -> kc : authorization code flow with PKCE (system browser)
+kc --> am : access token
+am -> api : GET /api/v1/agents/me
+api --> am : memberships
+op -> am : select institution (if several memberships)
+
+== Capture and measure ==
+am -> cam : start colour and depth stream
+cam --> am : aligned frames
+op -> am : mark two points on the object
+am -> am : compute distance from depth data
+op -> am : save draft
+
+== Upload ==
+am -> api : POST /api/v1/drafts
+api --> am : draft id
+am -> api : POST /drafts/{id}/resources (image and cut-out)
+api --> am : resource ids
+am -> api : POST .../resources/{id}/measurements (one per measurement)
+api --> am : measurement id
+
+== Later, in the web application ==
+note over am, api
+  A creator reviews the draft and converts it into
+  an object: POST /api/v1/drafts/{id}/to-entity
+end note
+@enduml

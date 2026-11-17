@@ -1,0 +1,23 @@
+@startuml system-context
+!include _style.puml
+skinparam nodesep 40
+skinparam ranksep 46
+
+actor "Museum staff\n<size:11>viewer, contributor, creator</size>" as staff
+actor "Administrator" as admin
+actor "Measurement operator" as operator
+
+rectangle "<b>ArtAdmin</b>\n<size:11>object records, provenance,</size>\n<size:11>image-based identification,</size>\n<size:11>measurements</size>" as sys
+
+rectangle "<b>Keycloak</b>\n<size:11>identity provider</size>" as kc #EDEDED
+cloud "<b>OpenRouter</b>\n<size:11>LLM provider</size>" as llm
+rectangle "<b>Intel RealSense D456</b>\n<size:11>depth camera</size>" as cam #EDEDED
+
+staff --> sys : web and mobile app
+admin --> sys : web app
+operator --> sys : ArtMeasure\ndesktop app
+
+sys --> kc : authenticates users\n(OpenID Connect)
+sys --> llm : ArtPilot requests\n(HTTPS)
+sys --> cam : reads colour and\ndepth frames (USB)
+@enduml

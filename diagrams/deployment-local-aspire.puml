@@ -1,0 +1,32 @@
+@startuml deployment-local-aspire
+!include _style.puml
+skinparam nodesep 16
+skinparam ranksep 38
+
+node "Developer machine" as dev {
+  component "<b>Aspire AppHost</b>\n<size:11>starts and wires all resources, dashboard</size>" as host #EDEDED
+
+  frame "Host processes" as procs {
+    artifact "<b>webfrontend</b>\n<size:11>Angular dev server</size>\n<size:11>:4200</size>" as web
+    artifact "<b>apiservice</b>\n<size:11>.NET project</size>\n<size:11>:5578</size>" as api
+  }
+
+  frame "Docker containers" as docker {
+    artifact "<b>keycloak</b>\n<size:11>:8080</size>" as kc
+    database "<b>postgres</b>\n<size:11>pgvector</size>" as pg
+    database "<b>elasticsearch</b>" as es
+    database "<b>minio</b>\n<size:11>:9000</size>" as minio
+    database "<b>cache</b>\n<size:11>Redis</size>" as redis
+  }
+}
+
+host ..> web : starts
+host ..> api : starts
+web -right-> api : REST
+web --> kc : OIDC
+api --> kc
+api --> pg
+api --> es
+api --> minio
+api --> redis
+@enduml

@@ -1,0 +1,96 @@
+@startuml er-media-drafts
+!include _style.puml
+left to right direction
+skinparam nodesep 8
+skinparam ranksep 22
+hide methods
+
+entity "Resources" as Resource {
+  EntityId <<FK>>
+  LicenseUri : text
+  MimeType : text
+  ResourceUri : text
+}
+entity "ResourceEmbeddings" as ResourceEmbedding {
+  Embedding : vector
+  ExtractorName : text
+  ResourceId <<FK>>
+}
+entity "ResourceEmbeddingFailures" as ResourceEmbeddingFailure {
+  Attempts : int
+  ExtractorName : text
+  LastAttemptAt : timestamptz
+  LastError : text
+  ResourceId <<FK>>
+}
+entity "SubParts" as SubPart {
+  Description : text
+  EntityId <<FK>>
+  Name : text
+  ResourceId <<FK>>
+}
+entity "Measurements" as Measurement {
+  Coordinate1Id <<FK>>
+  Coordinate2Id <<FK>>
+  DimensionType : text
+  EntityId <<FK>>
+  PartId <<FK>>
+  ResourceId <<FK>>
+  Unit : text
+  Value : numeric
+}
+entity "Coordinates" as Coordinate {
+  EntityPositionId <<FK>>
+  Number : int
+  SubPartId <<FK>>
+  X : int
+  Y : int
+}
+entity "EntityPositions" as EntityPosition {
+  EntityId <<FK>>
+  RoomId <<FK>>
+  RoomImageId <<FK>>
+}
+entity "Drafts" as Draft {
+  EntityName : text
+}
+entity "DraftResources" as DraftResource {
+  DraftId <<FK>>
+  ImageKey : text
+}
+entity "DraftMeasurements" as DraftMeasurement {
+  Coordinate1Id <<FK>>
+  Coordinate2Id <<FK>>
+  DistanceMM : int
+  DraftResourceId <<FK>>
+  MeasurementType : int
+}
+entity "DraftCoordinates" as DraftCoordinate {
+  X : int
+  Y : int
+}
+entity "Entities" as Entity $stub
+entity "FileAttachments" as FileAttachment $stub
+entity "Rooms" as Room $stub
+
+DraftCoordinate ||--o{ DraftMeasurement
+DraftCoordinate ||--o{ DraftMeasurement
+DraftResource ||--o{ DraftMeasurement
+Draft ||--o{ DraftResource
+Entity ||--o{ EntityPosition
+Room ||--o{ EntityPosition
+FileAttachment ||--o{ EntityPosition
+EntityPosition |o--o{ Coordinate
+SubPart |o--o{ Coordinate
+Coordinate |o-[norank]-o{ Measurement
+Coordinate |o-[norank]-o{ Measurement
+Entity ||--o{ Measurement
+SubPart |o--o{ Measurement
+Resource |o--o{ Measurement
+Entity ||--o{ Resource
+Resource ||--o{ ResourceEmbedding
+Resource ||--o{ ResourceEmbeddingFailure
+Entity ||--o{ SubPart
+Resource ||--o{ SubPart
+
+@enduml

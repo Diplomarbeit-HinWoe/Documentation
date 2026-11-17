@@ -1,0 +1,210 @@
+' Shared style for all thesis diagrams.
+' Sized for the thesis text block (15.5 cm x 25.7 cm): 1 px renders as 0.75 pt,
+' so the 12 px base font prints at 9 pt and the 11 px small font at 8.25 pt
+' as long as a diagram is not scaled down. Keep diagrams <= 585 px wide.
+' Fills are light greys so the figures survive black-and-white printing.
+
+!$own   = "#FFFFFF"
+!$infra = "#EDEDED"
+!$ext   = "#D9D9D9"
+!$group = "#F7F7F7"
+!$line  = "#2B2B2B"
+!$soft  = "#6B6B6B"
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName "Liberation Sans"
+skinparam defaultFontSize 12
+skinparam defaultFontColor #111111
+skinparam roundCorner 6
+skinparam padding 2
+skinparam titleFontSize 12
+skinparam wrapWidth 190
+skinparam maxMessageSize 190
+
+skinparam ArrowColor $line
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #111111
+skinparam ArrowThickness 1
+
+skinparam stereotype {
+  FontSize 11
+  FontColor $soft
+}
+
+skinparam note {
+  BackgroundColor #FAFAFA
+  BorderColor $soft
+  FontSize 11
+}
+
+skinparam rectangle {
+  BackgroundColor $own
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam component {
+  BackgroundColor $own
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+  Style rectangle
+}
+skinparam database {
+  BackgroundColor $infra
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam queue {
+  BackgroundColor $infra
+  BorderColor $line
+}
+skinparam cloud {
+  BackgroundColor $ext
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam node {
+  BackgroundColor $group
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam frame {
+  BackgroundColor $group
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam package {
+  BackgroundColor $group
+  BorderColor $soft
+  FontSize 12
+  FontStyle bold
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam folder {
+  BackgroundColor $group
+  BorderColor $soft
+  FontSize 12
+}
+skinparam artifact {
+  BackgroundColor $own
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam actor {
+  BackgroundColor $own
+  BorderColor $line
+  FontSize 12
+  StereotypeFontSize 11
+}
+skinparam usecase {
+  BackgroundColor $own
+  BorderColor $line
+  FontSize 12
+}
+
+skinparam class {
+  BackgroundColor $own
+  HeaderBackgroundColor $infra
+  BorderColor $line
+  ArrowColor $line
+  FontSize 12
+  FontStyle bold
+  AttributeFontSize 11
+  AttributeIconSize 0
+  StereotypeFontSize 11
+  StereotypeFontColor $soft
+}
+skinparam classAttributeIconSize 0
+skinparam circledCharacter {
+  FontSize 11
+  Radius 8
+}
+
+skinparam activity {
+  BackgroundColor $own
+  BorderColor $line
+  DiamondBackgroundColor $infra
+  DiamondBorderColor $line
+  DiamondFontSize 11
+  FontSize 12
+  StartColor $line
+  EndColor $line
+  BarColor $line
+}
+skinparam swimlane {
+  BorderColor $soft
+  BorderThickness 1
+  TitleFontSize 12
+  TitleFontStyle bold
+  TitleBackgroundColor $infra
+}
+skinparam partition {
+  BackgroundColor $group
+  BorderColor $soft
+  FontSize 12
+}
+
+skinparam state {
+  BackgroundColor $own
+  BorderColor $line
+  FontSize 12
+  AttributeFontSize 11
+  StartColor $line
+  EndColor $line
+}
+
+skinparam sequence {
+  ArrowColor $line
+  ArrowFontSize 11
+  LifeLineBorderColor $soft
+  LifeLineBackgroundColor $infra
+  ParticipantBackgroundColor $own
+  ParticipantBorderColor $line
+  ParticipantFontSize 12
+  ParticipantPadding 6
+  ActorBackgroundColor $own
+  ActorBorderColor $line
+  ActorFontSize 12
+  GroupBackgroundColor $infra
+  GroupBodyBackgroundColor white
+  GroupBorderColor $soft
+  GroupFontSize 11
+  GroupHeaderFontSize 11
+  DividerBackgroundColor $infra
+  DividerBorderColor $soft
+  DividerFontSize 11
+  ReferenceBackgroundColor $group
+  ReferenceBorderColor $soft
+  ReferenceFontSize 11
+  BoxBackgroundColor $group
+  BoxBorderColor $soft
+  BoxFontSize 12
+  MessageAlign left
+}
+
+hide circle
+hide empty members
+
+' Classes that are only referenced here and detailed in another figure.
+<style>
+classDiagram {
+  .stub {
+    BackgroundColor #D9D9D9
+  }
+}
+</style>

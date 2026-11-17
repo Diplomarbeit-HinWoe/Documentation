@@ -1,0 +1,36 @@
+@startuml reid-pipeline
+!include _style.puml
+skinparam nodesep 30
+skinparam ranksep 26
+skinparam wrapWidth 300
+
+rectangle "<b>Query image</b>\n<size:11>POST /api/v1/reid/search</size>" as q #EDEDED
+rectangle "<b>Uploaded object image</b>\n<size:11>resource upload or backfill job</size>" as up #EDEDED
+
+rectangle "Feature extraction  <size:11>(OnnxFeatureExtractor)</size>" as fx #F7F7F7 {
+  rectangle "<b>Preprocessing</b>\n<size:11>trim uniform border, letterbox</size>\n<size:11>to 224 px, ImageNet normalisation</size>" as pre
+  rectangle "<b>DINOv2 ViT-S/14 + re-ID head</b>\n<size:11>ONNX Runtime</size>" as dino
+  rectangle "<b>Embedding</b>\n<size:11>384 values, L2-normalised</size>" as emb
+}
+
+database "<b>ResourceEmbeddings</b>\n<size:11>PostgreSQL + pgvector</size>" as db
+
+rectangle "Search  <size:11>(ImageReIdentificationService)</size>" as search #F7F7F7 {
+  rectangle "<b>Nearest neighbours</b>\n<size:11>exact cosine search, 4 x K candidates,</size>\n<size:11>tenant and access filter</size>" as knn
+  rectangle "<b>Twin re-ranking</b>\n<size:11>compares patch features of look-alikes</size>" as twin
+  rectangle "<b>Grouping</b>\n<size:11>best image per object, top K</size>" as grp
+}
+
+rectangle "<b>Result list</b>\n<size:11>objects with similarity score</size>" as res #EDEDED
+
+q --> pre
+up --> pre
+pre --> dino
+dino --> emb
+emb --> knn : query
+emb --> db : store
+db --> knn
+knn --> twin
+twin --> grp
+grp --> res
+@enduml

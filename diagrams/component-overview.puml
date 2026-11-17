@@ -1,0 +1,48 @@
+@startuml component-overview
+!include _style.puml
+skinparam nodesep 28
+skinparam ranksep 42
+
+rectangle "Clients" as clients $group {
+  component "<b>Web application</b>\n<size:11>Angular 21 SPA</size>" as web
+  component "<b>Mobile app</b>\n<size:11>Capacitor (Android, iOS)</size>" as mobile
+  component "<b>ArtMeasure</b>\n<size:11>Python, PySide6</size>" as measure
+}
+
+component "<b>Keycloak</b>\n<size:11>OpenID Connect</size>" as kc #EDEDED
+
+rectangle "ArtAdmin API  <size:11>(ASP.NET Core, .NET 10)</size>" as api $group {
+  component "<b>ApiService</b>\n<size:11>REST controllers v1,</size>\n<size:11>middleware</size>" as ctrl
+  component "<b>Auth</b>\n<size:11>JWT validation,</size>\n<size:11>institution roles</size>" as auth
+  component "<b>Application</b>\n<size:11>services, DTOs,</size>\n<size:11>validation, mapping</size>" as app
+  component "<b>ArtVision</b>\n<size:11>DINOv2 embeddings,</size>\n<size:11>re-identification</size>" as vision
+  component "<b>Persistence</b>\n<size:11>EF Core, repositories,</size>\n<size:11>tenant scope</size>" as pers
+}
+
+database "<b>PostgreSQL</b>\n<size:11>+ pgvector</size>" as pg
+database "<b>Elasticsearch</b>\n<size:11>full-text search</size>" as es
+database "<b>MinIO</b>\n<size:11>object storage</size>" as minio
+database "<b>Redis</b>\n<size:11>cache</size>" as redis
+cloud "<b>OpenRouter</b>\n<size:11>LLM provider</size>\n<size:11>for ArtPilot</size>" as llm
+
+web -[hidden]right- mobile
+mobile -[hidden]right- measure
+
+clients --> ctrl : HTTPS / JSON
+clients --> kc : login (OIDC)
+ctrl -right-> auth
+auth .right.> kc : signing keys
+ctrl --> app
+app -right-> vision
+app --> pers
+
+pers --> pg
+app --> es
+app --> minio
+app --> redis
+ctrl -left-> llm
+
+pg -[hidden]right- es
+es -[hidden]right- minio
+minio -[hidden]right- redis
+@enduml

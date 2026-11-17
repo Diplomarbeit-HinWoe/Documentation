@@ -1,0 +1,46 @@
+@startuml activity-object-registration
+!include _style.puml
+skinparam wrapWidth 170
+
+|User|
+|Web application|
+|API|
+|User|
+start
+:Open the form
+for a new object;
+if (Use ArtPilot?) then (yes)
+  :Upload a document
+  or photo;
+  |API|
+  :ArtPilot proposes field
+  values (via OpenRouter);
+else (no)
+endif
+|User|
+repeat
+  :Enter or correct the data,
+  add materials, measurements,
+  attributions and images;
+  |Web application|
+  :Check the form and
+  send the object to the API;
+  |API|
+  :Validate the request;
+repeat while (Valid?) is (no) not (yes)
+:Save the object with a
+"Created" event, assign the
+inventory number, index it
+in Elasticsearch;
+|Web application|
+:Send images, measurements
+and attributions as
+separate requests;
+|API|
+:Per image: store it in MinIO,
+then compute its embedding;
+|Web application|
+:Show the object
+detail page;
+stop
+@enduml

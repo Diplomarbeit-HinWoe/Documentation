@@ -1,0 +1,37 @@
+@startuml activity-similarity-search
+!include _style.puml
+skinparam wrapWidth 150
+
+|User|
+start
+:Take or select a photo
+of the unknown object;
+|Web application|
+:Send the photo
+to the API;
+|API|
+:Trim the border, scale
+to 224 px, normalise;
+:Compute the DINOv2
+embedding (384 values);
+:Find the nearest
+stored images
+(cosine distance);
+:Re-rank look-alikes
+with patch features;
+:Keep the best image
+per object, take top K;
+|Web application|
+:Show the candidates
+with score bands;
+|User|
+if (Object found?) then (yes)
+  :Open the
+  object record;
+  stop
+else (no)
+  :Register it as
+  a new object;
+  stop
+endif
+@enduml

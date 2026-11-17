@@ -115,8 +115,158 @@ The developer team has experience in both Java and C\#. However, through a previ
 \subsection{Processing Pipeline}\label{sec:implementation:similarity:pipeline}
 
 \subsection{Similarity Computation and Robustness}\label{sec:implementation:similarity:robustness}
+\setauthor{\firstauthor}
+\section{Depth Camera and 3D Measurement}
+\label{sec:implementation:camera}
 
-\section{Depth Camera and 3D Measurement}\label{sec:implementation:camera}
+Measuring the physical dimensions of objects is a central requirement of the developed system. To support this functionality, a depth camera is used to capture the spatial information required to determine object dimensions within its measurement range, without the need for an external reference object in the scene.
+
+The following table compares eight depth cameras to evaluate their suitability for the system.
+
+\begin{landscape}
+	\begin{table}[p]
+		\centering
+		\scriptsize
+		\setlength{\tabcolsep}{4pt}
+		\renewcommand{\arraystretch}{1.25}
+		
+		\caption{Manufacturer-reported 3D camera and scanner specifications.}
+		\label{tab:3d-camera-comparison}
+		
+		\begin{tabularx}{\linewidth}{
+				@{}
+				>{\raggedright\arraybackslash}p{2.4cm}
+				>{\raggedright\arraybackslash}p{1.5cm}
+				>{\raggedright\arraybackslash}p{3.0cm}
+				>{\raggedright\arraybackslash}p{1.5cm}
+				>{\raggedright\arraybackslash}p{3.1cm}
+				>{\raggedright\arraybackslash}X
+				>{\raggedright\arraybackslash}p{2.2cm}
+				@{}
+			}
+			\toprule
+			Device &
+			Price &
+			Accuracy / metric &
+			Working distance &
+			FoV / capture area &
+			Acquisition API / SDK &
+			Sources \\
+			\midrule
+			
+			RealSense D456 &
+			USD 469\textsuperscript{a} &
+			Depth accuracy: $<2\%$ at 4\,m &
+			0.60--6.00\,m &
+			$87^\circ \times 58^\circ$ &
+			Open source; librealsense; no separate SDK fee &
+			\cite{rs_prices,rs_specs,rs_sdk} \\
+			
+			RealSense D405 &
+			USD 272\textsuperscript{a} &
+			Depth accuracy: $\pm2\%$ at 0.50\,m &
+			0.07--0.50\,m &
+			$87^\circ \times 58^\circ$ &
+			Open source; librealsense; no separate SDK fee &
+			\cite{rs_prices,rs_specs,rs_sdk} \\
+			
+				
+			Orbbec Femto Bolt &
+			USD 418 &
+			Systematic depth error:
+			$<11\,\mathrm{mm}+0.001z$\textsuperscript{b} &
+			0.25--5.46\,m\textsuperscript{c} &
+			NFOV: $75^\circ \times 65^\circ$;
+			WFOV: $120^\circ \times 120^\circ$ &
+			Open source; Orbbec SDK v2; no separate SDK fee &
+			\cite{orbbec_bolt,orbbec_bolt_conditions,orbbec_sdk} \\
+			
+			Stereolabs ZED 2i &
+			EUR 499 &
+			Conditioned model-specific bound: not verified &
+			0.30--20.00\,m &
+			$110^\circ \times 70^\circ$;
+			2.1\,mm lens &
+			Proprietary; public ZED SDK;
+			separate fee not identified &
+			\cite{zed2i,zed_sdk} \\
+			
+			Revopoint POP 3 Plus &
+			USD 619 &
+			Single-frame accuracy:
+			up to 0.08\,mm &
+			0.15--0.40\,m &
+			$61 \times 68$\,mm at 0.15\,m;
+			$244 \times 180$\,mm at 0.40\,m &
+			Proprietary; SDK authorization:
+			USD 2,000, one-time\textsuperscript{d} &
+			\cite{revo_pop3plus,revo_sdk} \\
+			
+			Revopoint MINI 2 &
+			USD 746 &
+			Single-frame accuracy:
+			up to 0.05\,mm &
+			0.12--0.25\,m &
+			$52 \times 64$\,mm at 0.12\,m;
+			$168 \times 132$\,mm at 0.25\,m &
+			Proprietary; SDK authorization:
+			USD 2,000, one-time\textsuperscript{d} &
+			\cite{revo_mini2,revo_sdk} \\
+			
+			Creality CR-Scan Otter &
+			USD 899 &
+			Advertised accuracy:
+			up to 0.02\,mm &
+			0.11--1.00\,m &
+			Not verified &
+			Public acquisition SDK: not verified;
+			vendor software available &
+			\cite{otter_store,otter_guide,otter_support} \\
+			
+			Artec Eva &
+			USD 9,900 &
+			3D point accuracy:
+			up to 0.10\,mm &
+			0.40--1.00\,m &
+			$30^\circ \times 21^\circ$ &
+			Proprietary; Artec Scanning SDK;
+			free of charge &
+			\cite{artec_eva} \\
+			
+			\bottomrule
+		\end{tabularx}
+		
+	\end{table}
+\end{landscape}
+
+Based on the comparison, the Intel RealSense D456 was selected
+for the system. The main reason was the open-source librealsense
+SDK, which provides example applications for working with the
+camera data. These examples helped with the development of the
+desktop application. The SDK also includes an example for
+measuring the distance between two points in three-dimensional
+space \cite{rs_sdk}.
+
+Software integration was an important part of the decision.
+The table includes other devices with open-source SDKs, so this
+was not the only factor considered. The specified working
+distance of up to 6\,m was another reason for choosing the D456
+\cite{rs_specs}. However, the relevance of this range depends
+on the size of the objects and the distance between the camera
+and the object during measurement.
+
+The comparison also shows some limitations. Several scanners
+list smaller accuracy values, but these values describe
+different metrics and measurement conditions. They cannot
+be used on their own to decide which device is most suitable
+for the application. The D456 was therefore selected mainly
+for its software integration and working range, rather than
+for having the best reported accuracy.
+
+The manufacturer's specifications do not show how accurately
+the completed system can measure object dimensions. Practical
+tests are needed to evaluate the measurement results and
+determine whether they meet the requirements of the application.
 
 \subsection{Hardware, Software and Measurement Principle}\label{sec:implementation:camera:hardware}
 

@@ -1,0 +1,136 @@
+@startuml er-core
+!include _style.puml
+left to right direction
+skinparam nodesep 13
+skinparam ranksep 30
+hide methods
+
+entity "Institutions" as Institution {
+  AiEnabled : bool
+  Description : text
+  Domain : text
+  LogoObjectKey : text
+  Name : text
+}
+entity "InstitutionMemberships" as InstitutionMembership {
+  AgentId <<FK>>
+  Group : text
+}
+entity "Agents" as Agent {
+  BirthDate : date
+  DeathDate : date
+  Email : text
+  IsKeycloakUser : bool
+  ModifyTimeSpan : interval
+  MoreInformation : text
+  Name : text
+  Phone : text
+}
+entity "AgentEntity" as AgentEntity {
+  AgentId <<FK>>
+  EntityAccessId <<FK>>
+}
+entity "Attributions" as Attribution {
+  AgentId <<FK>>
+  AgentRole : text
+  Description : text
+  EntityId <<FK>>
+}
+entity "Locations" as Location {
+  Address : text
+  Initials : text
+  Name : text
+}
+entity "Rooms" as Room {
+  LocationId <<FK>>
+  Name : text
+  Number : text
+}
+entity "Entities" as Entity {
+  CurrentRoomId <<FK>>
+  Description : text
+  ExtraInformation : jsonb
+  GroupId <<FK>>
+  Inscriptions : text
+  LicenseUri : text
+  RecordSourceId <<FK>>
+  RightsWork : text
+  Title : text
+  TypeId <<FK>>
+}
+entity "EntityGroups" as EntityGroup {
+  Description : text
+  Initials : text
+  InventoryNumberPrefix : text
+  Name : text
+  SuperGroupId <<FK>>
+}
+entity "EntityTypes" as EntityType {
+  Description : text
+  Name : text
+}
+entity "RecordSources" as RecordSource {
+  Description : text
+  EntityGroupId <<FK>>
+  EntityTypeId <<FK>>
+  Files : jsonb
+  Name : text
+  RoomId <<FK>>
+}
+entity "InventoryNumber" as InventoryNumber {
+  CustomValue : text
+  CustomValueNormalized : text
+  EntityGroupId <<FK>>
+  EntityId <<FK>>
+  Kind : int
+  LocationId <<FK>>
+  Number : int
+}
+entity "InventoryNumberCounter" as InventoryNumberCounter {
+  EntityGroupId <<FK>>
+  LastNumber : int
+  LocationId <<FK>>
+}
+entity "Materials" as Material {
+  Description : text
+  Term : text
+}
+entity "EntityMaterials" as EntityMaterial {
+  EntityId <<FK>>
+  MaterialId <<FK>>
+}
+entity "EntityTags" as EntityTag {
+  ColorHex : text
+  Name : text
+}
+entity "EntityEntityTag" as EntityEntityTag {
+  EntityId <<FK>>
+  TagId <<FK>>
+}
+
+Agent ||--o{ AgentEntity
+Entity ||--o{ AgentEntity
+Agent ||--o{ Attribution
+Entity ||--o{ Attribution
+Agent ||--o{ InstitutionMembership
+Institution ||--o{ InstitutionMembership
+Location ||-[norank]-o{ Room
+Room ||--o{ Entity
+EntityGroup |o--o{ Entity
+RecordSource ||-[norank]-o{ Entity
+EntityType ||--o{ Entity
+EntityGroup |o-[norank]-o{ EntityGroup
+EntityGroup |o--o{ InventoryNumber
+Entity ||--o| InventoryNumber
+Location |o--o{ InventoryNumber
+EntityGroup |o--o{ InventoryNumberCounter
+Location ||--o{ InventoryNumberCounter
+Entity ||--o{ EntityMaterial
+Material ||--o{ EntityMaterial
+EntityGroup |o--o{ RecordSource
+EntityType |o--o{ RecordSource
+Room |o--o{ RecordSource
+Entity ||--o{ EntityEntityTag
+EntityTag ||--o{ EntityEntityTag
+
+@enduml

@@ -1,0 +1,66 @@
+@startuml class-media-measurements
+!include _style.puml
+skinparam nodesep 40
+skinparam ranksep 40
+
+class Entity $stub
+
+class Resource {
+  ResourceUri : string
+  MimeType : string
+  LicenseUri : string?
+}
+
+class ResourceEmbedding {
+  ExtractorName : string
+  Embedding : Vector(384)
+}
+
+class ResourceEmbeddingFailure {
+  ExtractorName : string
+  Attempts : int
+  LastError : string?
+  LastAttemptAt : DateTimeOffset
+}
+
+class SubPart {
+  Name : string?
+  Description : string?
+}
+
+class Measurement {
+  DimensionType : DimensionType
+  Value : decimal
+  Unit : string
+}
+
+class Coordinate {
+  X : int
+  Y : int
+  Number : int
+}
+
+enum DimensionType {
+  Height
+  Width
+  Depth
+  Diameter
+  Weight
+  Angle
+  DiagonalXY
+  DiagonalXZ
+  DiagonalXYZ
+}
+
+Entity "1" *-down- "*" Resource
+Entity "1" *-down- "*" Measurement
+Resource "1" *-down- "*" ResourceEmbedding
+Resource "1" *-down- "*" SubPart
+ResourceEmbedding -[hidden]down- ResourceEmbeddingFailure
+Resource "1" *-down- "*" ResourceEmbeddingFailure
+Measurement "*" -down-> "0..1" SubPart : part
+Measurement "*" -left-> "0..1" Resource : measured on
+SubPart "0..1" *-down- "*" Coordinate : polygon
+Measurement "*" -down-> "0..2" Coordinate : end points
+Measurement .up.> DimensionType
+@enduml

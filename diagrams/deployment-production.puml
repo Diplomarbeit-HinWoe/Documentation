@@ -1,0 +1,55 @@
+@startuml deployment-production
+!include _style.puml
+skinparam nodesep 14
+skinparam ranksep 30
+
+rectangle "Client devices" as clients #F7F7F7 {
+  artifact "<b>Browser</b>\n<size:11>Angular SPA</size>" as browser
+  artifact "<b>Smartphone</b>\n<size:11>Capacitor app</size>" as phone
+  artifact "<b>Desktop PC</b>\n<size:11>ArtMeasure</size>" as measure
+}
+
+node "Kubernetes cluster <size:11>(k3s)</size>" as cluster {
+  component "<b>Traefik ingress</b>\n<size:11>TLS (Let's Encrypt)</size>" as traefik #EDEDED
+
+  frame "production namespace" as prod {
+    artifact "<b>webfrontend</b>\n<size:11>nginx</size>\n<size:11>artadmin.at</size>" as web
+    artifact "<b>apiservice</b>\n<size:11>ASP.NET Core</size>\n<size:11>api.artadmin.at</size>" as api
+    artifact "<b>keycloak</b>\n<size:11>identity provider</size>\n<size:11>auth.artadmin.at</size>" as kc
+    database "<b>postgres</b>\n<size:11>PostgreSQL 13</size>" as pg
+    database "<b>elasticsearch</b>" as es
+    database "<b>minio</b>\n<size:11>s3.artadmin.at</size>" as minio
+    database "<b>redis</b>" as redis
+    database "<b>postgres</b>\n<size:11>for Keycloak</size>" as kcdb
+  }
+
+  frame "namespace monitoring" as mon {
+    artifact "<b>Grafana Alloy</b>\n<size:11>OTLP collector</size>" as alloy
+    artifact "<b>Prometheus, Loki,</b>\n<b>Tempo, Grafana</b>" as obs
+  }
+}
+
+cloud "<b>OpenRouter</b>\n<size:11>LLM provider</size>" as llm
+
+browser -[hidden]right- phone
+phone -[hidden]right- measure
+measure -[hidden]right- llm
+
+traefik --> web
+traefik --> api
+traefik --> kc
+web -[hidden]right- api
+phone --> traefik : HTTPS
+
+api --> pg
+api --> es
+api --> minio
+api --> redis
+kc --> kcdb
+redis -[hidden]right- kcdb
+
+es -[hidden]down- alloy
+api ..> alloy : OTLP
+alloy -right-> obs
+api .up.> llm : HTTPS
+@enduml

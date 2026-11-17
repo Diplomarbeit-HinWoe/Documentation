@@ -1,0 +1,25 @@
+@startuml frontend-structure
+!include _style.puml
+skinparam nodesep 30
+skinparam ranksep 36
+skinparam wrapWidth 260
+
+package "ArtAdmin.Web  <size:11>src/app</size>" as webapp {
+  rectangle "<b>layout</b>\n<size:11>application shell, navigation,</size>\n<size:11>institution switcher</size>" as layout
+  rectangle "<b>features</b>\n<size:11>one route per domain: entities,</size>\n<size:11>entity-groups, agents, events, locations,</size>\n<size:11>rooms, drafts, history, copilot, ...</size>" as features
+  rectangle "<b>shared</b>\n<size:11>CrudShellComponent, DetailPageComponent,</size>\n<size:11>data table, grid and list, history viewer,</size>\n<size:11>image search dialog, measurement editor</size>" as shared
+  rectangle "<b>core</b>\n<size:11>auth (guards, interceptors, role service),</size>\n<size:11>services (institution context, reference</size>\n<size:11>data, history, search), models</size>" as core
+  rectangle "<b>generated</b>\n<size:11>OpenAPI client and DTO types</size>" as gen
+}
+
+rectangle "<b>Keycloak</b>" as kc #EDEDED
+rectangle "<b>ArtAdmin API</b>" as api #EDEDED
+
+layout --> features : router outlet
+features --> shared
+features --> core
+shared --> core
+core --> gen
+gen --> api : HTTPS / JSON
+core --> kc : keycloak-js
+@enduml
