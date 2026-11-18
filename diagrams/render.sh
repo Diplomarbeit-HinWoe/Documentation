@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Renders the thesis diagrams: diagrams/*.puml -> pics/*.pdf (vector, fonts embedded).
+# Renders the thesis diagrams: diagrams/*.puml -> pics/*.png (3x scale).
 #
 #   ./diagrams/render.sh                 # all diagrams
 #   ./diagrams/render.sh class-objects   # only the named ones
@@ -41,6 +41,6 @@ mkdir -p "$out"
 plantuml -tsvg -o "$tmp" "${sources[@]}"
 for f in "${sources[@]}"; do
   name="$(basename "$f" .puml)"
-  rsvg-convert -f pdf -o "$out/$name.pdf" "$tmp/$name.svg"
-  echo "rendered pics/$name.pdf"
+  rsvg-convert -f png --zoom 3 -o "$out/$name.png" "$tmp/$name.svg"
+  echo "rendered pics/$name.png"
 done
